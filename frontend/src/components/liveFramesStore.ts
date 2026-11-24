@@ -19,14 +19,17 @@ export function latestSnapshot(cameraId: string): Snapshot | null {
 
 const canBlob = typeof URL.createObjectURL === "function";
 
-export function useSnapshot(cameraId: string, everyMs = 500): Snapshot | null {
+/** [rtmpose clone] `quality` "normal" (mjpeg_width) for the Dashboard tiles, which poll snapshots instead of each
+ * holding an MJPEG stream: over HTTP/1.1 (the dev server) a browser allows 6 connections per site, and 4+ tile
+ * streams starved every other request (status, alerts, new streams) - frozen UI and black tiles. */
+export function useSnapshot(cameraId: string, everyMs = 500, quality: "thumb" | "normal" = "thumb"): Snapshot | null {
   const [snap, setSnap] = useState<Snapshot | null>(() => latest.get(cameraId) ?? null);
   useEffect(() => {
     const ctl = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const tick = async () => {
       try {
-        const r = await fetch(media.frame(cameraId, "thumb", "client"), { signal: ctl.signal, credentials: "same-origin", cache: "no-store" });
+        const r = await fetch(media.frame(cameraId, quality, "client"), { signal: ctl.signal, credentials: "same-origin", cache: "no-store" });
         if (r.ok && canBlob) {
           const next = { url: URL.createObjectURL(await r.blob()), boxes: parseBoxes(r.headers.get("x-lifeguard-boxes")) };
           const old = latest.get(cameraId);
@@ -44,6 +47,6 @@ export function useSnapshot(cameraId: string, everyMs = 500): Snapshot | null {
       ctl.abort();
       clearTimeout(timer);
     };
-  }, [cameraId, everyMs]);
+  }, [cameraId, everyMs, quality]);
   return snap;
 }

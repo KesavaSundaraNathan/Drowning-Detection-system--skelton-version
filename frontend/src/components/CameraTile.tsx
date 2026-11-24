@@ -75,13 +75,17 @@ export function CameraTile({
     </>
   );
   // [v4] wall variants: the main view holds the one live stream, previews poll snapshots (components/liveFrames.tsx)
+  // [rtmpose clone] Dashboard tiles poll snapshots too (only the large single-camera view keeps a stream): one MJPEG
+  // stream per tile took one of the browser's 6 HTTP/1.1 connections each, and with 4 cameras the UI starved.
   const img =
     variant === "main" ? (
       <MainStream cameraId={camera.camera_id} name={camera.name} />
     ) : variant === "thumb" ? (
       <SnapshotImage cameraId={camera.camera_id} name={camera.name} />
-    ) : (
+    ) : large ? (
       <MainStream cameraId={camera.camera_id} name={camera.name} quality="normal" />
+    ) : (
+      <SnapshotImage cameraId={camera.camera_id} name={camera.name} quality="normal" everyMs={330} />
     );
   const nm = overlay && (
     <div className="cam-overlay" role="alert" data-testid={`camera-overlay-${camera.camera_id}`}>

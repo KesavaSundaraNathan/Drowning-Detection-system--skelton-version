@@ -216,7 +216,8 @@ describe("camera tile", () => {
   it("puts NOT MONITORING over the video when the camera is not analysed or the feed is down", () => {
     mockFetch({ "GET /api/v1/alerts": () => ({ body: [] }) }); // the tile asks for its alarm ring
     const first = renderWith(<CameraTile camera={camera} notMonitored={false} feedDown={false} />);
-    expect(screen.getByRole("img", { name: "Live view of Main pool" })).toHaveAttribute("data-stream", "/api/v1/live/cameras/c1/mjpeg?overlay=client");
+    // [rtmpose clone] a Dashboard tile polls snapshots: no long-lived MJPEG stream (browser HTTP/1.1 connection limit)
+    expect(document.querySelector("[data-stream]")).toBeNull();
     expect(screen.queryByTestId("camera-overlay-c1")).toBeNull();
     first.unmount();
     renderWith(<CameraTile camera={{ ...camera, stalled: true }} notMonitored feedDown={false} />);

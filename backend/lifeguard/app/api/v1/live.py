@@ -16,6 +16,8 @@ GET  /live/cameras/{id}/mjpeg           any role - multipart MJPEG of the same, 
 from __future__ import annotations
 
 import asyncio
+import itertools
+import time
 from collections.abc import AsyncIterator
 from typing import Any, Literal
 
@@ -93,7 +95,25 @@ def stop_camera(camera_id: str, request: Request, ctx: Ctx, me: Supervisor) -> d
 
 
 _NO_STORE = {"Cache-Control": "no-store, private"}
+# [rtmpose clone] MJPEG viewer slots. A viewer counts while its stream keeps sending (a heartbeat per frame), not
+# from generator start to `finally`: when a viewer disconnects, Starlette can abandon the generator at `yield`
+# without closing it, its `finally` never ran, and the old counter leaked until every live tile got 503
+# too_many_viewers (black). A stream that has not sent for VIEWER_STALE_S frees its slot. `_streams` keeps any
+# fixed extra count (0 in normal operation).
 _streams = {"open": 0, "hq": 0}
+VIEWER_STALE_S = 5.0
+_viewers: dict[int, tuple[float, bool]] = {}  # viewer token -> (last frame loop at, high quality)
+_viewer_tokens = itertools.count(1)
+
+
+def _open_viewers(hq_only: bool = False) -> int:
+    """Viewers whose stream looped within VIEWER_STALE_S; drops the stale (abandoned) ones."""
+    now = time.monotonic()
+    for token in [t for t, (seen, _) in _viewers.items() if now - seen > VIEWER_STALE_S]:
+        _viewers.pop(token, None)
+    return sum(1 for _, hq in _viewers.values() if hq or not hq_only)
+
+
 _BOUNDARY = "lifeguardframe"
 
 
@@ -143,23 +163,23 @@ async def camera_mjpeg(
     X-Lifeguard-Boxes part header (view modes: the browser draws, so switching mode never reconnects)."""
     rt = _runtime(ctx)
     s = ctx.settings
-    hq = quality == "high" and _streams["hq"] < s.mjpeg_hq_max_streams
+    hq = quality == "high" and _streams["hq"] + _open_viewers(hq_only=True) < s.mjpeg_hq_max_streams
     width, fps = (s.mjpeg_hq_width, s.mjpeg_hq_fps) if hq else (s.mjpeg_width, s.mjpeg_fps)
     if camera_id not in rt.camera_ids():
         raise HTTPException(404, "not_running")
-    if _streams["open"] >= s.mjpeg_max_streams:
+    if _streams["open"] + _open_viewers() >= s.mjpeg_max_streams:
         raise HTTPException(503, "too_many_viewers")
     period = 1.0 / fps
 
     async def frames() -> AsyncIterator[bytes]:
-        # counted INSIDE the stream, so every increment has its decrement: a viewer that leaves before the first frame
-        # (fast camera switching) never started the generator and was never counted
-        _streams["open"] += 1
-        if hq:
-            _streams["hq"] += 1
+        # counted INSIDE the stream (a viewer that leaves before the first frame never started the generator), and
+        # only while it keeps looping: an abandoned generator stops refreshing its slot and is dropped (see _viewers)
+        token = next(_viewer_tokens)
+        _viewers[token] = (time.monotonic(), hq)
         try:
             # ends when the viewer leaves or the camera stops (the UI then shows it as not running)
             while not await request.is_disconnected() and camera_id in rt.camera_ids():
+                _viewers[token] = (time.monotonic(), hq)
                 extra = ""
                 if overlay == "client":
                     out = await to_thread.run_sync(render_client, rt.latest_view(camera_id), width, camera_id, skeleton)
@@ -171,8 +191,6 @@ async def camera_mjpeg(
                     yield head.encode() + jpg + b"\r\n"
                 await asyncio.sleep(period)
         finally:
-            _streams["open"] -= 1
-            if hq:
-                _streams["hq"] -= 1
+            _viewers.pop(token, None)
 
     return StreamingResponse(frames(), media_type=f"multipart/x-mixed-replace; boundary={_BOUNDARY}", headers=_NO_STORE)

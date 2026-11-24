@@ -47,6 +47,32 @@ The original keeps running from its own `Life Guard Start.bat` on :8000 / :5173.
 share one GPU: each version measures its capacity as if it had the GPU alone, so run 4 cameras in only one of them
 at a time.
 
+### Local test cameras (dev only)
+
+`tools/clone_dev/` runs the clone with RTSP test cameras made from the Drowning Dataset videos (the videos and the
+encoded clips stay local, in the git-ignored `runtime/`):
+
+```powershell
+bash tools/clone_dev/encode_dd.sh                                                      # once: 1080p, 15 fps clips
+powershell -ExecutionPolicy Bypass -File tools\clone_dev\start_rtsp.ps1               # rtsp://127.0.0.1:8654/IMG_xxxx
+powershell -ExecutionPolicy Bypass -File tools\clone_dev\start_api.ps1                # API :8100
+powershell -ExecutionPolicy Bypass -File tools\clone_dev\start_ui.ps1                 # UI  :5273
+```
+
+The clips are MPEG-4 Part 2 on purpose: with x264 timing, the camera opener's short RTSP probe reads 15 fps streams
+as 30 fps and analyses only 2 of every 3 frames.
+
+## Fixes found running 4 cameras (2026-11-24)
+
+- **Black tiles (HTTP 503 `too_many_viewers`):** an MJPEG viewer slot was freed in the stream generator's `finally`,
+  which never ran when Starlette abandoned the generator at `yield` on a disconnect. Slots leaked until all 16 were
+  taken and every live view was refused. `app/api/v1/live.py` now counts a viewer only while its stream keeps
+  sending (an abandoned stream frees its slot within 5 s); `tests/unit/test_mjpeg_viewers.py`.
+- **Frozen UI / glitches:** over HTTP/1.1 (the Vite dev server) a browser allows 6 connections per site, and every
+  Dashboard tile held one MJPEG stream, so 4 cameras starved the status, alert and stream requests. Dashboard tiles
+  now poll snapshots (~3/s, normal size); only the large single-camera view keeps a stream.
+- Both bugs are in the original's code too (unchanged there).
+
 For bit-identical detections to the original, seed this clone's engine cache with the original's engines (copy
 `C:\LifeGuardDev\trt_cache` to `runtime\trt_cache`): separately built TensorRT FP16 engines differ in the last digits.
 

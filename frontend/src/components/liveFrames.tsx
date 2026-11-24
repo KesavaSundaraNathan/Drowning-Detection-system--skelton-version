@@ -77,11 +77,22 @@ export function BoxOverlay({ boxes, mode, skeleton = true }: { boxes: FrameBoxes
   );
 }
 
-/** A preview: the camera's newest snapshot and its boxes. */
-export function SnapshotImage({ cameraId, name }: { cameraId: string; name: string }) {
+/** A preview: the camera's newest snapshot and its boxes. [rtmpose clone] `quality`/`everyMs`: the Dashboard tiles
+ * use normal-size snapshots about 3x a second (short requests, no long-lived connection). */
+export function SnapshotImage({
+  cameraId,
+  name,
+  quality = "thumb",
+  everyMs = 500,
+}: {
+  cameraId: string;
+  name: string;
+  quality?: "thumb" | "normal";
+  everyMs?: number;
+}) {
   const [mode] = useViewMode(cameraId);
   const [skeleton] = useSkeleton(cameraId);
-  const snap = useSnapshot(cameraId);
+  const snap = useSnapshot(cameraId, everyMs, quality);
   if (!snap) return <div className="wall-waiting">Connecting…</div>;
   return (
     <>
