@@ -491,8 +491,9 @@ class MultiPersonDetector:
         return tracker
 
     def _effective_birth_guard(self) -> float | None:
-        """[2.19.0] The birth guard only for DETR detectors (D-FINE): with RTMDet it lost 2 of 7 held-out dev events."""
-        return self.birth_guard_iou if getattr(self._det_model, "detr", False) else None
+        """[2.19.0] The birth guard was only ever used with DETR detectors (removed); with RTMDet it lost 2 of 7
+        held-out dev events, so it stays off."""
+        return None
 
     def set_birth_guard(self, iou: float | None) -> None:
         """[2.18.0] Finite clips: the tracker's birth guard (TRACK_BIRTH_GUARD_IOU_CLIP); live cameras keep None."""
@@ -777,7 +778,7 @@ class MultiPersonDetector:
         # person classes only (COCO/single-class: label 0; zone-aware v2 detector:
         # person_in_water + person_out_of_water, one box per person + water vote)
         boxes, scores, water = rtm_backend.run_detector_people(dm, img, score_thr=self.conf, names=self._det_names)
-        if self.nested_ioa > 0 and len(boxes) > 1 and not getattr(dm, "detr", False):
+        if self.nested_ioa > 0 and len(boxes) > 1:
             # [2.18.0] clips: a box mostly inside another (a splashing arm, the head of a struggling swimmer) is a
             # part of that person, not a second one - it otherwise becomes a shadow released as a new id after 1.5 s
             keep = rtm_backend._drop_nested(boxes, scores, self.nested_ioa)

@@ -57,8 +57,6 @@ allowed-confusables = ["–", "×", "−"]
 # entry points print their reports. Same verbatim-preserving exemptions as the ported vision code.
 "training/lifeguard_training/behavior/dataset.py" = ["B905", "RUF046"]
 "training/lifeguard_training/behavior/train.py" = ["B905", "T20"]
-"training/lifeguard_training/dfine/export.py" = ["PTH123", "RUF059", "T20"]
-"training/lifeguard_training/dfine/train.py" = ["S603", "T20"]       # developer CLI: launches D-FINE train.py
 "training/lifeguard_training/behavior/cli.py" = ["T20"]
 # evaluation CLIs print their report (the library modules of lifeguard.eval do not)
 "backend/lifeguard/eval/{evaluate,compare,trace}.py" = ["T20"]

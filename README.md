@@ -157,7 +157,7 @@ that is awaiting a decision.
 - The site validation has not been run: client confirmation of the pass levels, the dry run, the drills (D1-D7, 10 controlled
   submersions, 5 watch-clearing runs), the replay, labels and the final report (`docs/SITE_SESSION.md`).
 - Off by their pre-registered rules, awaiting site data: `MULTIVIEW_CONFIRM`, `RESPONSIBILITY_GATING`, `GLARE_HOLD`, `DET_TILING`.
-- No pose model runs in v3; the learned behaviour model is off by default; the D-FINE detector is `dev_only`.
+- No pose model runs in v3; the learned behaviour model is off by default.
 - Open items from earlier phases that need the target site: 24 h soak and chaos run, behaviour-model data, ISO 20380.
 - Installed services (if any) need `lifeguard db upgrade` (migration 0007), a re-run of `services.ps1` for the 0.5 s restart delay,
   and a restart.

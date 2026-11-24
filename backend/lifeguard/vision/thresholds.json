@@ -1,6 +1,6 @@
 {
   "schema": "aquaguard-thresholds/1",
-  "version": "2.43.0",
+  "version": "2.44.0",
   "description": "Detection, tracking, scene and behaviour thresholds and switches. Version 2.0.0 is the v2-baseline values, unchanged (Phase 3 parity). Every change bumps `version`, adds a `changelog` entry with its evaluation evidence, and updates the pinned sha256 in tests/unit/test_thresholds.py; the server audits the active version + sha256 at startup.",
   "changelog": [
     {
@@ -313,16 +313,18 @@
       "date": "2026-11-18",
       "change": "New keys, behaviour unchanged (zone gate): ZONE_GATE false. When on and the camera has a drawn WATER / SHALLOW polygon, a detector box is kept only if the bottom ZONE_GATE_FOOT_BAND 0.1 of the box, grown by a margin of max(ZONE_GATE_MARGIN_BOX 0.1 x box height, ZONE_GATE_MARGIN_FRAME 0.01 x frame height), touches the drawn water; anything else (deck, outside the pool) is dropped before tracking, so it gets no box, track, pose, score or alert. A box that overlaps (IoU >= 0.3) the last box of a public track seen inside the gate within ZONE_GATE_GRACE_SECONDS 2.0 is kept (a swimmer climbing out). ZONE_GATE_AFTER_TRACK false: with it true the tracker still sees every box (ids exactly as without the gate) and the gate removes deck boxes after tracking, before pose, scoring and display; grace then keeps a public id that was inside within the grace period. No drawn zone, or a zone that rasterises to (nearly) nothing: whole frame, as before (warning logged).",
       "evidence": "docs/evidence/zone_gate/README.md"
+    },
+    {
+      "version": "2.44.0",
+      "date": "2026-11-24",
+      "change": "Removed keys (owner, 2026-11-24: D-FINE / DETR detector support removed): DET_DETR_MIN_SCORE, DET_DETR_NESTED_IOA, DET_DETR_NMS_IOU, DET_DETR_TRACK_FLOOR. They only applied to DETR detectors, never to the shipped RTMDet-m, so RTMDet behaviour is unchanged.",
+      "evidence": "git log: remove D-FINE / DETR support"
     }
   ],
   "values": {
     "features": {
       "CLIP_ANALYSIS_FPS": 0.0,
       "CUDNN_CONV_ALGO_SEARCH": "HEURISTIC",
-      "DET_DETR_MIN_SCORE": 0.3,
-      "DET_DETR_NESTED_IOA": 0.8,
-      "DET_DETR_NMS_IOU": 0.5,
-      "DET_DETR_TRACK_FLOOR": 0.0,
       "DET_ENHANCE": "",
       "DET_INPUT_SIZE": 640,
       "DET_MOSAIC": false,

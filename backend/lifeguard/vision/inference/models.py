@@ -30,9 +30,6 @@ META_FORMAT = "lifeguard.det_format"  # "xyxy_scores" for layout (b)
 META_CLASSES = "lifeguard.classes"  # JSON list of class names
 META_TASK = "lifeguard.task"  # "detector" | "pose"
 FORMAT_XYXY_SCORES = "xyxy_scores"
-# DETR-family exports (training/dfine): raw `logits (1,Q,C)` + `boxes (1,Q,4)`
-# cxcywh normalised to [0,1]; input RGB / 255, plain resize (no letterbox).
-FORMAT_DETR = "detr_logits"
 # RTMDet (mmdet) normalises BGR input; RTMPose (mmpose) was trained on RGB.
 DET_MEAN_BGR = (103.53, 116.28, 123.675)
 DET_STD_BGR = (57.375, 57.12, 58.395)
@@ -89,15 +86,10 @@ class DetModel(_SessionModel):
             self.model_input_size = (int(imgsz), int(imgsz))
         self.fmt = model_metadata(self).get(META_FORMAT, "")
         # RTMDet (mmdet) normalises with ImageNet mean/std; YOLOX exports take
-        # raw 0–255 BGR (what rtmlib's YOLOX wrapper feeds them); DETR exports
-        # take RGB / 255 at a plain (non-letterboxed) resize.
-        self.detr = self.fmt == FORMAT_DETR
+        # raw 0–255 BGR (what rtmlib's YOLOX wrapper feeds them).
         raw_input = "yolox" in Path(path).name.lower()
-        if self.detr:
-            self.mean, self.std = np.zeros(3, np.float32), np.full(3, 255.0, np.float32)
-        else:
-            self.mean = np.zeros(3, np.float32) if raw_input else np.array(DET_MEAN_BGR, np.float32)
-            self.std = np.ones(3, np.float32) if raw_input else np.array(DET_STD_BGR, np.float32)
+        self.mean = np.zeros(3, np.float32) if raw_input else np.array(DET_MEAN_BGR, np.float32)
+        self.std = np.ones(3, np.float32) if raw_input else np.array(DET_STD_BGR, np.float32)
         self._inv_std = (1.0 / self.std).astype(np.float32)
 
     def _bufs(self) -> tuple[np.ndarray, np.ndarray]:
@@ -109,18 +101,10 @@ class DetModel(_SessionModel):
         return tls.canvas, tls.x
 
     def preprocess(self, img: np.ndarray) -> tuple[np.ndarray, float]:
-        """Letterbox (top-left aligned, pad 114) + normalise. Returns (NCHW float32 view, ratio).
-
-        DETR exports: plain resize to the input size, RGB, / 255 (ratio 1.0 —
-        their boxes are normalised and scaled by the caller's frame size)."""
+        """Letterbox (top-left aligned, pad 114) + normalise. Returns (NCHW float32 view, ratio)."""
         canvas, x = self._bufs()
         h, w = self.model_input_size
         ih, iw = img.shape[:2]
-        if self.detr:
-            rs = cv2.resize(img, (w, h), interpolation=cv2.INTER_LINEAR)
-            for c in range(3):  # BGR frame -> RGB planes
-                np.multiply(rs[:, :, 2 - c], self._inv_std[c], out=x[0, c], dtype=np.float32)
-            return x, 1.0
         ratio = min(h / ih, w / iw)
         nh, nw = int(ih * ratio), int(iw * ratio)
         canvas.fill(114)

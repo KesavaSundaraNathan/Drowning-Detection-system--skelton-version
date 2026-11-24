@@ -14,7 +14,6 @@ from typing import Any
 import cv2
 import numpy as np
 
-from lifeguard.vision.constants import DET_DETR_MIN_SCORE, DET_DETR_NESTED_IOA, DET_DETR_NMS_IOU, DET_DETR_TRACK_FLOOR
 from lifeguard.vision.inference.models import FORMAT_XYXY_SCORES, DetModel
 
 logger = logging.getLogger(__name__)
@@ -223,16 +222,6 @@ def agnostic_nms(boxes: np.ndarray, scores: np.ndarray, iou: float) -> np.ndarra
     return np.asarray(cv2.dnn.NMSBoxes(xywh, scores.astype(float).tolist(), 0.0, iou), int).reshape(-1)
 
 
-def detr_floor() -> float:
-    """[2.22.0] Lowest DETR score kept: DET_DETR_MIN_SCORE, or DET_DETR_TRACK_FLOOR when set below it. The boxes in
-    between only reach ByteTrack's low-score stages (extend / re-find a track): a birth needs
-    TRACK_HIGH_SCORE_THRESHOLD + TRACK_BIRTH_SCORE_MARGIN and an untracked box shows from TENTATIVE_DISPLAY_MIN_SCORE,
-    both >= DET_DETR_MIN_SCORE (tests/vision/test_detr_track_floor.py holds that)."""
-    if 0.0 < DET_DETR_TRACK_FLOOR < DET_DETR_MIN_SCORE:
-        return float(DET_DETR_TRACK_FLOOR)
-    return float(DET_DETR_MIN_SCORE)
-
-
 def _person_view(
     boxes: np.ndarray,
     cls_scores: np.ndarray,
@@ -263,7 +252,7 @@ def _person_view(
 
 
 def _drop_nested(boxes: np.ndarray, scores: np.ndarray, min_ioa: float) -> np.ndarray:
-    """[v7] DETR only: indices kept after dropping every box lying >= min_ioa (of its own area) inside a
+    """[v7] Indices kept after dropping every box lying >= min_ioa (of its own area) inside a
     higher-scoring kept box - a second query on the same person. Best score first, like NMS."""
     order = np.argsort(-scores)
     area = np.maximum((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]), 1e-9)
@@ -292,22 +281,6 @@ def run_detector_people(
     """
     person, water, land = person_class_ids(names)
     zone_aware = bool(water and land)
-    if isinstance(model, DetModel) and model.detr:
-        outputs, _ = model.run(frame)
-        logits, boxes = np.asarray(outputs[0])[0], np.asarray(outputs[1])[0]
-        cls = 1.0 / (1.0 + np.exp(-logits.astype(np.float32)))
-        ih, iw = frame.shape[:2]
-        cx, cy, bw, bh = boxes[:, 0] * iw, boxes[:, 1] * ih, boxes[:, 2] * iw, boxes[:, 3] * ih
-        xyxy = np.stack([cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2], 1).astype(np.float32)
-        # DETR queries are near-duplicate-free by construction; the light NMS only
-        # merges the rare same-person pair, so it uses a looser IoU than CNN heads.
-        # [v7] The fine-tuned D-FINE is not: ~25 boxes per frame on dev clips, mostly stacked on the same person.
-        # DET_DETR_NMS_IOU / DET_DETR_MIN_SCORE / DET_DETR_NESTED_IOA tighten that (defaults: the old 0.7 / none / off).
-        b, s, w = _person_view(xyxy, cls, person, water, land, max(score_thr, detr_floor()), DET_DETR_NMS_IOU)
-        if DET_DETR_NESTED_IOA > 0 and len(b) > 1:
-            keep = _drop_nested(b, s, DET_DETR_NESTED_IOA)
-            b, s, w = b[keep], s[keep], w[keep]
-        return b, s, w
     if zone_aware and isinstance(model, DetModel) and model.fmt == FORMAT_XYXY_SCORES:
         outputs, ratio = model.run(frame)
         first = np.asarray(outputs[0])

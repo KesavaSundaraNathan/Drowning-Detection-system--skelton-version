@@ -40,28 +40,6 @@
       }
     },
     {
-      "file": "lifeguard_dfine_m_devtrain_v1_dynbatch.onnx",
-      "role": "detector",
-      "key": "lifeguard_dfine_m_devtrain_v1_dynbatch",
-      "kind": "det",
-      "source": {
-        "framework": "D-FINE (Apache-2.0)",
-        "base_checkpoint": "dfine_m_coco.pth",
-        "config": "build/phase7/dfine/run_m_640/lifeguard_dfine_m.yml",
-        "trained_checkpoint": "build/phase7/dfine/run_m_640/run/best_stg2.pth"
-      },
-      "sha256": "edb6f337a8e4854ed4a5737ad65c8c02b7e352e2139ed9a338a7de398d1bafec",
-      "bytes": 77736761,
-      "licence": "Apache-2.0 (D-FINE code)",
-      "commercial_ok": true,
-      "data_provenance": "D-FINE dfine_m_coco.pth (COCO-only, Apache-2.0) fine-tuned on UNREVIEWED RTMDet pseudo-labels of the 10 dev clips of eval/heldout_v1 (public web footage, rights not cleared) - dev_only, never a default",
-      "classes": [
-        "person_in_water",
-        "person_out_of_water"
-      ],
-      "dev_only": true
-    },
-    {
       "role": "detector",
       "licence": "Apache-2.0 (mmdet code) + COCO (images/annotations) — no Objects365",
       "commercial_ok": true,
@@ -138,28 +116,6 @@
         "checkpoint": "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt (sha256 = the URL hash, checked by clip.load)"
       },
       "note": "v4 pool-vs-other scene SUGGESTION (vision/scene/scene_classifier.py), keyframes only, never per frame. Built by tools/export_scene_clip.py: prompts baked into the graph, output = class probabilities; classes in the ONNX metadata."
-    },
-    {
-      "file": "lifeguard_dfine_l_pool_v0.onnx",
-      "role": "detector",
-      "key": "lifeguard_dfine_l_pool_v0",
-      "kind": "det",
-      "source": {
-        "framework": "D-FINE (Apache-2.0)",
-        "base_checkpoint": "dfine_l_coco.pth",
-        "config": "training/configs/dfine_l_v0.yml",
-        "trained_checkpoint": "training/work_dirs/dfine_l_v0/best_stg1.pth"
-      },
-      "sha256": "e93b5e02ed0452ebb0738dd0d1283ec8d5c66b7bef9eb67991da838ea1bcf8e1",
-      "bytes": 124956086,
-      "licence": "Apache-2.0 (D-FINE code)",
-      "commercial_ok": true,
-      "data_provenance": "D-FINE-L COCO-only checkpoint (Apache-2.0) fine-tuned on 211 seed frames of this pool's own footage (public web footage, rights not cleared): owner-verified boxes plus unaudited Claude/verifier labels, 2026-10 trial v0c - dev_only, never a default",
-      "classes": [
-        "swimmer",
-        "person_out_of_water"
-      ],
-      "dev_only": true
     }
   ],
   "defaults": {
