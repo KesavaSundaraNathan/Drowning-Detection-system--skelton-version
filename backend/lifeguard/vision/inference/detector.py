@@ -28,6 +28,7 @@ when POSE_ENABLED and a pose model is configured: top-down RTMPose-m COCO on eve
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from collections.abc import Sequence
@@ -93,6 +94,12 @@ from lifeguard.vision.tracking.non_person import NonPersonFilter
 
 logger = logging.getLogger(__name__)
 
+
+# [rtmpose clone] Standard CCTV cameras also run RTMPose, for the skeleton overlay only. The original skips pose there
+# (detection + tracking, nothing scored). A CCTV camera is still never scored, and nothing that decides anything
+# reads these keypoints: stage_pose's output reaches only the displayed people (see _detect_rtm). Set
+# LIFEGUARD_CCTV_SKELETON=0 to get the original behaviour (no pose on standard CCTV, no GPU cost there).
+CCTV_SKELETON: bool = os.environ.get("LIFEGUARD_CCTV_SKELETON", "1").strip().lower() not in ("0", "false", "no", "off")
 
 BBox = tuple[int, int, int, int]
 Point = tuple[float, float]
@@ -1061,7 +1068,7 @@ class MultiPersonDetector:
         self, frame: np.ndarray, boxes: np.ndarray, ids: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """(pose_idx, keypoints, keypoint scores, skipped mask) for the tracked boxes; top-down RTMPose crops."""
-        if self._pose_model is None or len(boxes) == 0 or self.surveillance:
+        if self._pose_model is None or len(boxes) == 0 or (self.surveillance and not CCTV_SKELETON):
             return np.empty((0,), int), np.zeros((0, 17, 2)), np.zeros((0, 17)), np.zeros(len(boxes), bool)
         idx, skipped = self.pose_plan(boxes, ids)
         if len(idx) == 0:
@@ -1104,7 +1111,7 @@ class MultiPersonDetector:
             if len(boxes) == 0:
                 return []
         pose_idx, kpts, kp_conf, skipped = self.stage_pose(frame, boxes, ids)
-        if stitcher is not None:  # [2.35.0] skeletons for ID_LINK_NESTED's two-skeleton veto
+        if stitcher is not None and not self.surveillance:  # [2.35.0] skeletons for ID_LINK_NESTED's two-skeleton veto
             for j, i in enumerate(pose_idx.tolist()):
                 if j < len(kpts) and int(ids[i]) > 0:
                     stitcher.note_pose(int(ids[i]), kpts[j], kp_conf[j], t)
@@ -1122,8 +1129,12 @@ class MultiPersonDetector:
         )
         # [2.18.0] lens occluders (a finger) and fixtures (lane-rope anchor posts) are not people: not reported
         slot = {int(i): j for j, i in enumerate(pose_idx.tolist())}
+        # [rtmpose clone] standard CCTV: the non-person (fixture / occluder) rules see no joints, as without pose,
+        # so the skeleton overlay cannot change which boxes are shown
         joints = [
-            int((kp_conf[slot[i]] >= KEYPOINT_CONF_THRESHOLD).sum()) if i in slot and slot[i] < len(kp_conf) else None
+            int((kp_conf[slot[i]] >= KEYPOINT_CONF_THRESHOLD).sum())
+            if not self.surveillance and i in slot and slot[i] < len(kp_conf)
+            else None
             for i in range(len(boxes))
         ]
         test = self.outside_water_test

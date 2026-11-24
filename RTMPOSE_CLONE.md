@@ -72,6 +72,10 @@ as 30 fps and analyses only 2 of every 3 frames.
   Dashboard tile held one MJPEG stream, so 4 cameras starved the status, alert and stream requests. Dashboard tiles
   now poll snapshots (~3/s, normal size); only the large single-camera view keeps a stream.
 - Both bugs are in the original's code too (unchanged there).
+- **No skeleton on standard CCTV cameras:** the original skips pose for them (detection + tracking only), so there
+  were no keypoints to draw. The clone now runs pose there too, for the overlay only: a CCTV camera is still never
+  scored, and the non-person (fixture) and id-link rules get no keypoints, as before. `LIFEGUARD_CCTV_SKELETON=0`
+  restores the original (no pose, no GPU cost on CCTV cameras); `tests/unit/test_cctv_skeleton.py`.
 
 For bit-identical detections to the original, seed this clone's engine cache with the original's engines (copy
 `C:\LifeGuardDev\trt_cache` to `runtime\trt_cache`): separately built TensorRT FP16 engines differ in the last digits.
