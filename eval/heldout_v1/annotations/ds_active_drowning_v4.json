@@ -1,0 +1,114 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v4",
+  "video": "../../build/v2_baseline/Datasets/active drowning (4).mp4",
+  "camera_id": "ds_active_drowning_v4",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 1780,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Garden pond. Boy falls in at ~8 s and stays under; adult pulls him out at ~41-45 s. A girl stands on the edge throughout. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          82,
+          389,
+          212,
+          748,
+          "partial"
+        ],
+        [
+          225,
+          147,
+          470,
+          327,
+          765,
+          "partial"
+        ],
+        [
+          300,
+          150,
+          580,
+          420,
+          800,
+          "partial"
+        ],
+        [
+          600,
+          200,
+          600,
+          450,
+          800,
+          "partial"
+        ],
+        [
+          975,
+          280,
+          600,
+          480,
+          780,
+          "partial"
+        ],
+        [
+          1200,
+          330,
+          540,
+          620,
+          800,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          224,
+          "out_of_water"
+        ],
+        [
+          225,
+          299,
+          "edge"
+        ],
+        [
+          300,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          974,
+          "in_water"
+        ],
+        [
+          975,
+          1199,
+          "in_water"
+        ],
+        [
+          1200,
+          1779,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "SUBMERSION",
+      "start_frame": 250,
+      "end_frame": 1250,
+      "staged": false
+    }
+  ]
+}

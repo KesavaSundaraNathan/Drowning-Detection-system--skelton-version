@@ -1,0 +1,200 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v8",
+  "video": "../../build/v2_baseline/Datasets/Active drowning (8).mp4",
+  "camera_id": "ds_active_drowning_v8",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 1956,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Montage: the same toddler fall + rescue shown twice, with cuts to a second camera (f225-300, f975-1230). EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          374,
+          133,
+          435,
+          310,
+          "partial"
+        ],
+        [
+          60,
+          300,
+          380,
+          520,
+          560,
+          "partial"
+        ],
+        [
+          150,
+          200,
+          540,
+          340,
+          700,
+          "partial"
+        ],
+        [
+          300,
+          200,
+          520,
+          460,
+          700,
+          "partial"
+        ],
+        [
+          450,
+          420,
+          380,
+          560,
+          560,
+          "partial"
+        ],
+        [
+          600,
+          374,
+          133,
+          435,
+          310,
+          "partial"
+        ],
+        [
+          700,
+          300,
+          380,
+          520,
+          560,
+          "partial"
+        ],
+        [
+          750,
+          330,
+          470,
+          470,
+          600,
+          "partial"
+        ],
+        [
+          900,
+          330,
+          540,
+          460,
+          690,
+          "partial"
+        ],
+        [
+          1350,
+          300,
+          520,
+          470,
+          700,
+          "partial"
+        ],
+        [
+          1500,
+          300,
+          440,
+          520,
+          650,
+          "partial"
+        ],
+        [
+          1560,
+          250,
+          420,
+          460,
+          650,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          59,
+          "out_of_water"
+        ],
+        [
+          60,
+          149,
+          "in_water"
+        ],
+        [
+          150,
+          299,
+          "in_water"
+        ],
+        [
+          300,
+          449,
+          "in_water"
+        ],
+        [
+          450,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          699,
+          "out_of_water"
+        ],
+        [
+          700,
+          749,
+          "in_water"
+        ],
+        [
+          750,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1349,
+          "in_water"
+        ],
+        [
+          1350,
+          1499,
+          "in_water"
+        ],
+        [
+          1500,
+          1559,
+          "in_water"
+        ],
+        [
+          1560,
+          1955,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "SUBMERSION",
+      "start_frame": 45,
+      "end_frame": 450,
+      "staged": false
+    },
+    {
+      "id": "e2",
+      "track_id": 1,
+      "type": "SUBMERSION",
+      "start_frame": 630,
+      "end_frame": 1560,
+      "staged": false
+    }
+  ]
+}

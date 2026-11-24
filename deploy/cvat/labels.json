@@ -1,0 +1,132 @@
+[
+  {
+    "name": "person",
+    "type": "rectangle",
+    "attributes": [
+      {
+        "name": "visibility",
+        "mutable": true,
+        "input_type": "select",
+        "default_value": "full",
+        "values": [
+          "full",
+          "partial",
+          "head",
+          "underwater",
+          "invisible"
+        ]
+      },
+      {
+        "name": "state",
+        "mutable": true,
+        "input_type": "select",
+        "default_value": "in_water",
+        "values": [
+          "in_water",
+          "edge",
+          "out_of_water"
+        ]
+      },
+      {
+        "name": "activity",
+        "mutable": true,
+        "input_type": "select",
+        "default_value": "swimming",
+        "values": [
+          "swimming",
+          "treading",
+          "floating",
+          "standing_water",
+          "playing",
+          "diving",
+          "entering",
+          "exiting",
+          "resting_edge",
+          "standing_deck",
+          "walking",
+          "sitting",
+          "lying",
+          "distress",
+          "distress_active",
+          "distress_passive",
+          "submerged"
+        ]
+      },
+      {
+        "name": "age",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "unknown",
+        "values": [
+          "unknown",
+          "adult",
+          "child"
+        ]
+      },
+      {
+        "name": "ignore",
+        "mutable": false,
+        "input_type": "checkbox",
+        "default_value": "false",
+        "values": [
+          "false"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "glare",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "night",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "low_res",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "crowded",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "far_end",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "partial_submersion",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "rain",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "splash",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "reflections",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "compression",
+    "type": "tag",
+    "attributes": []
+  },
+  {
+    "name": "underwater_lights",
+    "type": "tag",
+    "attributes": []
+  }
+]

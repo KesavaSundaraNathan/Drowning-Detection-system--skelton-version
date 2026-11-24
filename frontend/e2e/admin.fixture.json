@@ -1,0 +1,5 @@
+{
+  "_comment": "Test-only e2e login for the throwaway LIFEGUARD_ENV=demo stack tools/e2e_stack.py starts on 127.0.0.1 with a fresh build/e2e/<run>/ data dir. Never a real account. Read by e2e/fixtures.ts and tools/e2e_stack.py.",
+  "username": "e2e.admin",
+  "password": "E2E-Walkthrough-Pool-2026!"
+}

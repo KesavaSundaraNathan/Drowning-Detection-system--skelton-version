@@ -1,0 +1,8 @@
+# Life Guard override for CVAT v2.78.0 (deploy/cvat/setup.ps1 passes it after CVAT's own docker-compose.yml).
+# The footage shows identifiable people, including minors, with rights not cleared (docs/DATA_PROTOCOL.md):
+# CVAT must only be reachable from this machine. CVAT's compose publishes Traefik on ALL interfaces
+# (8080 + the 8090 dashboard port); this pins the UI/API to loopback and drops 8090.
+services:
+  traefik:
+    ports: !override
+      - "127.0.0.1:8080:8080"

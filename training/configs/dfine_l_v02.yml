@@ -1,0 +1,18 @@
+# D-FINE-L v0.2: v0.1 fine-tuned on round-2 hard negatives (tools/hardneg2.py; undecided regions blurred in copies under data/frames_r2).
+# Start from work_dirs/dfine_l_v01/best_stg1.pth via -t.
+__include__: ['dfine_l_v0.yml']
+
+output_dir: C:/lifeguard/training/work_dirs/dfine_l_v02
+epochs: 12                       # augmentation and multi-scale stop for the last 2 epochs
+lr_warmup_scheduler: {type: LinearWarmup, warmup_duration: 100}
+
+train_dataloader:
+  dataset:
+    ann_file: C:/lifeguard/training/data/coco/hardneg_r2/train.json
+    transforms:
+      policy:
+        name: stop_epoch
+        epoch: 10
+        ops: ['PoolPhotometric', 'RandomZoomOut', 'RandomIoUCrop']
+  collate_fn:
+    stop_epoch: 10

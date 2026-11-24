@@ -1,0 +1,61 @@
+{
+ "format": "aquaguard-eval/1",
+ "clip_id": "uw_img_5515",
+ "video": "../../Drowning Dataset/IMG_5515.mov",
+ "camera_id": "uw_img_5515",
+ "split": "dev",
+ "labelled": true,
+ "fps": 30.0,
+ "width": 3840,
+ "height": 2160,
+ "frame_count": 1065,
+ "annotated_frames": [
+  210,
+  240,
+  420,
+  450
+ ],
+ "conditions": [],
+ "tracks": [
+  {
+   "id": 1,
+   "age": "unknown",
+   "boxes": [
+    [
+     210,
+     1876.0,
+     428.0,
+     1974.0,
+     588.0,
+     "partial"
+    ],
+    [
+     240,
+     1838.0,
+     454.0,
+     1954.0,
+     594.0,
+     "partial"
+    ],
+    [
+     420,
+     1647.0,
+     446.0,
+     1778.0,
+     621.0,
+     "partial"
+    ],
+    [
+     450,
+     1536.0,
+     491.0,
+     1756.0,
+     628.0,
+     "partial"
+    ]
+   ]
+  }
+ ],
+ "events": [],
+ "continuity_track": 1
+}

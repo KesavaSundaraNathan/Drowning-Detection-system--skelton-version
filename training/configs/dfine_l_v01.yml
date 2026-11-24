@@ -1,0 +1,18 @@
+# D-FINE-L v0.1: v0 fine-tuned with the hard-negative frames and the cleaned labels (reports/hardneg_r1_rule.md).
+# Start from work_dirs/dfine_l_v0/best_stg1.pth via -t; everything else as v0 except the data, epochs and the stop epoch.
+__include__: ['dfine_l_v0.yml']
+
+output_dir: C:/lifeguard/training/work_dirs/dfine_l_v01
+epochs: 20                       # augmentation and multi-scale stop for the last 3 epochs (15 %)
+lr_warmup_scheduler: {type: LinearWarmup, warmup_duration: 100}
+
+train_dataloader:
+  dataset:
+    ann_file: C:/lifeguard/training/data/coco/hardneg_r1/train.json
+    transforms:
+      policy:
+        name: stop_epoch
+        epoch: 17
+        ops: ['PoolPhotometric', 'RandomZoomOut', 'RandomIoUCrop']
+  collate_fn:
+    stop_epoch: 17

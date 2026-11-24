@@ -1,0 +1,140 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v9",
+  "video": "../../build/v2_baseline/Datasets/active drowning (9).mp4",
+  "camera_id": "ds_active_drowning_v9",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 1876,
+  "height": 1080,
+  "frame_count": 1762,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Close lane-pool view. Boy goes down the ladder, struggles then sinks; pulled out at ~45-52 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          1270,
+          370,
+          1640,
+          920,
+          "partial"
+        ],
+        [
+          150,
+          960,
+          560,
+          1220,
+          800,
+          "partial"
+        ],
+        [
+          300,
+          1000,
+          580,
+          1230,
+          790,
+          "partial"
+        ],
+        [
+          450,
+          1000,
+          640,
+          1250,
+          860,
+          "partial"
+        ],
+        [
+          600,
+          900,
+          600,
+          1120,
+          800,
+          "partial"
+        ],
+        [
+          900,
+          700,
+          650,
+          1150,
+          960,
+          "partial"
+        ],
+        [
+          1200,
+          1000,
+          680,
+          1300,
+          960,
+          "partial"
+        ],
+        [
+          1400,
+          950,
+          680,
+          1400,
+          980,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          149,
+          "edge"
+        ],
+        [
+          150,
+          299,
+          "in_water"
+        ],
+        [
+          300,
+          449,
+          "in_water"
+        ],
+        [
+          450,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1199,
+          "in_water"
+        ],
+        [
+          1200,
+          1399,
+          "in_water"
+        ],
+        [
+          1400,
+          1761,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 80,
+      "end_frame": 1400,
+      "staged": false
+    }
+  ]
+}

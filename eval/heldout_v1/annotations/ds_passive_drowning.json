@@ -1,0 +1,153 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_passive_drowning",
+  "video": "../../build/v2_baseline/Datasets/passive drowning.mp4",
+  "camera_id": "ds_passive_drowning",
+  "split": "test",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 2197,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Aerial; child enters at ~4 s and drowns silently while a second child plays nearby; adult arrives at ~60 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          370,
+          590,
+          430,
+          710,
+          "partial"
+        ],
+        [
+          180,
+          370,
+          850,
+          450,
+          950,
+          "partial"
+        ],
+        [
+          300,
+          290,
+          850,
+          390,
+          930,
+          "partial"
+        ],
+        [
+          600,
+          260,
+          860,
+          350,
+          930,
+          "partial"
+        ],
+        [
+          900,
+          260,
+          850,
+          370,
+          940,
+          "partial"
+        ],
+        [
+          1200,
+          290,
+          850,
+          390,
+          940,
+          "partial"
+        ],
+        [
+          1500,
+          310,
+          860,
+          410,
+          940,
+          "partial"
+        ],
+        [
+          1800,
+          290,
+          850,
+          430,
+          950,
+          "partial"
+        ],
+        [
+          1990,
+          320,
+          840,
+          430,
+          960,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          179,
+          "out_of_water"
+        ],
+        [
+          180,
+          299,
+          "in_water"
+        ],
+        [
+          300,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1199,
+          "in_water"
+        ],
+        [
+          1200,
+          1499,
+          "in_water"
+        ],
+        [
+          1500,
+          1799,
+          "in_water"
+        ],
+        [
+          1800,
+          1989,
+          "in_water"
+        ],
+        [
+          1990,
+          2196,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "PASSIVE_DROWNING",
+      "start_frame": 300,
+      "end_frame": 1990,
+      "staged": false
+    }
+  ]
+}

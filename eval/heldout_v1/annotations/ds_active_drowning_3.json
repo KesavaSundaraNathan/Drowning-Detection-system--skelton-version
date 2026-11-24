@@ -1,0 +1,114 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_3",
+  "video": "../../build/v2_baseline/Datasets/active drowning 3.mp4",
+  "camera_id": "ds_active_drowning_3",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 1920,
+  "height": 1080,
+  "frame_count": 1805,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Same incident as active drowning (2), 1080p cut of its first 60 s (no rescue inside the clip). EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          75,
+          1500,
+          720,
+          1680,
+          1010,
+          "partial"
+        ],
+        [
+          225,
+          1250,
+          700,
+          1600,
+          1000,
+          "partial"
+        ],
+        [
+          450,
+          1250,
+          750,
+          1550,
+          1040,
+          "partial"
+        ],
+        [
+          900,
+          1250,
+          760,
+          1550,
+          1060,
+          "partial"
+        ],
+        [
+          1500,
+          1250,
+          760,
+          1550,
+          1060,
+          "partial"
+        ],
+        [
+          1804,
+          1250,
+          760,
+          1600,
+          1070,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          224,
+          "edge"
+        ],
+        [
+          225,
+          449,
+          "in_water"
+        ],
+        [
+          450,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1499,
+          "in_water"
+        ],
+        [
+          1500,
+          1803,
+          "in_water"
+        ],
+        [
+          1804,
+          1804,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 225,
+      "end_frame": 1804,
+      "staged": false
+    }
+  ]
+}

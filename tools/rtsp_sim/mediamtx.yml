@@ -1,0 +1,26 @@
+# Life Guard RTSP simulator (plan Phase 4: soak + chaos tests). MediaMTX (MIT): https://github.com/bluenviron/mediamtx
+# Loopback only. Each simulated camera is published by its OWN ffmpeg process (tests/_stack.py: Stack.publish),
+# so a chaos test can kill one camera's stream without touching the others.
+logLevel: warn
+logDestinations: [stdout]
+
+# RTSP only; every other protocol off
+rtsp: yes
+rtspAddress: 127.0.0.1:8554
+rtspTransports: [tcp]
+rtmp: no
+hls: no
+webrtc: no
+srt: no
+# [Phase 11 WP4] MediaMTX v1.21 added MoQ, ON by default on ALL interfaces (:8892/:8893), writing a self-signed
+# auto.crt/auto.key into the working directory (found when it did so in the repo root)
+moq: no
+api: no
+metrics: no
+pprof: no
+playback: no
+
+paths:
+  # any publisher may create cam0 .. camN; readers wait for nothing (a dead stream must look dead)
+  "~^cam[0-9]+$":
+    source: publisher

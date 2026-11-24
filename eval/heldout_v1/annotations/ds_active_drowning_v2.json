@@ -1,0 +1,114 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v2",
+  "video": "../../build/v2_baseline/Datasets/active drowning (2).mp4",
+  "camera_id": "ds_active_drowning_v2",
+  "split": "dev",
+  "labelled": true,
+  "fps": 20.0,
+  "width": 626,
+  "height": 360,
+  "frame_count": 4380,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Lane pool, 20 fps. Boy climbs down the ladder, falls in at ~20 s, struggles, sinks near the ladder; rescued at ~171 s. Many other swimmers. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          280,
+          410,
+          215,
+          480,
+          305,
+          "partial"
+        ],
+        [
+          400,
+          420,
+          245,
+          500,
+          310,
+          "partial"
+        ],
+        [
+          600,
+          425,
+          255,
+          500,
+          320,
+          "partial"
+        ],
+        [
+          900,
+          405,
+          265,
+          490,
+          330,
+          "partial"
+        ],
+        [
+          1500,
+          395,
+          280,
+          490,
+          345,
+          "partial"
+        ],
+        [
+          3420,
+          395,
+          280,
+          500,
+          350,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          399,
+          "edge"
+        ],
+        [
+          400,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1499,
+          "in_water"
+        ],
+        [
+          1500,
+          3419,
+          "in_water"
+        ],
+        [
+          3420,
+          4379,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 400,
+      "end_frame": 3420,
+      "staged": false
+    }
+  ]
+}

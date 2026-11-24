@@ -1,0 +1,101 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v6",
+  "video": "../../build/v2_baseline/Datasets/active drowning (6).mp4",
+  "camera_id": "ds_active_drowning_v6",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 518,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Aerial view; toddler walks into the pool at ~6.5 s, adult grabs them at ~10-11 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          60,
+          290,
+          500,
+          370,
+          630,
+          "partial"
+        ],
+        [
+          150,
+          320,
+          470,
+          390,
+          590,
+          "partial"
+        ],
+        [
+          190,
+          330,
+          490,
+          410,
+          590,
+          "partial"
+        ],
+        [
+          240,
+          340,
+          500,
+          430,
+          600,
+          "partial"
+        ],
+        [
+          300,
+          260,
+          470,
+          410,
+          610,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          149,
+          "out_of_water"
+        ],
+        [
+          150,
+          189,
+          "edge"
+        ],
+        [
+          190,
+          239,
+          "in_water"
+        ],
+        [
+          240,
+          299,
+          "in_water"
+        ],
+        [
+          300,
+          517,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 190,
+      "end_frame": 330,
+      "staged": false
+    }
+  ]
+}

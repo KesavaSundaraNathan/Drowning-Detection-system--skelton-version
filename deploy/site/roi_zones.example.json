@@ -1,0 +1,14 @@
+{
+  "format": "aquaguard-roi/1",
+  "cameras": {
+    "Test Feed": {
+      "zones": [
+        {"name": "Pool", "type": "WATER", "polygon": [[0.02, 0.35], [0.98, 0.35], [0.98, 0.98], [0.02, 0.98]]},
+        {"name": "Entry steps", "type": "SHALLOW", "sensitivity": 0.8,
+         "polygon": [[0.02, 0.35], [0.18, 0.35], [0.18, 0.6], [0.02, 0.6]]},
+        {"name": "Far deck", "type": "DECK", "polygon": [[0.0, 0.0], [1.0, 0.0], [1.0, 0.35], [0.0, 0.35]]},
+        {"name": "Burned-in timestamp", "type": "MASK", "polygon": [[0.7, 0.0], [1.0, 0.0], [1.0, 0.06], [0.7, 0.06]]}
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v7",
+  "video": "../../build/v2_baseline/Datasets/active drowning (7).mp4",
+  "camera_id": "ds_active_drowning_v7",
+  "split": "test",
+  "labelled": true,
+  "fps": 29.809,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 623,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Toddler on the deck falls in at ~8.5 s, floats face-down; man jumps in at ~14 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          245,
+          160,
+          325,
+          325,
+          "partial"
+        ],
+        [
+          240,
+          245,
+          160,
+          325,
+          325,
+          "partial"
+        ],
+        [
+          268,
+          220,
+          280,
+          310,
+          390,
+          "partial"
+        ],
+        [
+          328,
+          220,
+          300,
+          330,
+          430,
+          "partial"
+        ],
+        [
+          388,
+          200,
+          220,
+          340,
+          430,
+          "partial"
+        ],
+        [
+          447,
+          240,
+          290,
+          430,
+          460,
+          "partial"
+        ],
+        [
+          500,
+          270,
+          290,
+          460,
+          460,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          239,
+          "out_of_water"
+        ],
+        [
+          240,
+          267,
+          "out_of_water"
+        ],
+        [
+          268,
+          327,
+          "in_water"
+        ],
+        [
+          328,
+          387,
+          "in_water"
+        ],
+        [
+          388,
+          446,
+          "in_water"
+        ],
+        [
+          447,
+          499,
+          "in_water"
+        ],
+        [
+          500,
+          622,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 255,
+      "end_frame": 480,
+      "staged": false
+    }
+  ]
+}

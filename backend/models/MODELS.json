@@ -1,0 +1,169 @@
+{
+  "schema": "aquaguard-models/3",
+  "note": "Weights are never in git. Every model the server may load must be listed with its sha256, code/weights licence, training-data provenance and dev_only flag. A model trained on footage whose rights are not cleared (docs/phase_reports/phase0/evidence/RIGHTS.csv: allowed_use dev-train) is dev_only and can never appear in 'defaults'. Enforced by tools/check_licenses.py.",
+  "models": [
+    {
+      "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.onnx",
+      "role": "detector",
+      "key": "rtmdet_m_coco_only",
+      "sha256": "7ba76371b2e3e170687baeead44eebf6fdbecce75ed3c03272924cf9c8631c49",
+      "bytes": 109481341,
+      "licence": "Apache-2.0 (mmdet code) + COCO (images/annotations) — no Objects365",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "COCO 2017 train (annotations CC-BY-4.0; images Flickr, per-image CC licences) + ImageNet-pretrained CSPNeXt backbone — accepted by the product owner 2026-09-26",
+      "source": {
+        "config": "mmdet::rtmdet/rtmdet_m_8xb32-300e_coco.py",
+        "checkpoint": "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_m_8xb32-300e_coco/rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.pth"
+      },
+      "note": "COCO-only RTMDet-m: the v2 baseline's default detector (built by v2 scripts/export_coco_only_detector.py; file unchanged, sha256 verified by tools/verify_models.py). Registered in Phase 3."
+    },
+    {
+      "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx",
+      "role": "detector",
+      "key": "rtmdet_m_coco_only_dynbatch",
+      "sha256": "9f8017326ac1a48ddd845a33ccb0a313d798ce133ad314d6b6cc9572e623579c",
+      "bytes": 109481661,
+      "licence": "Apache-2.0 (mmdet code) + COCO (images/annotations) — no Objects365",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "COCO 2017 train (annotations CC-BY-4.0; images Flickr, per-image CC licences) + ImageNet-pretrained CSPNeXt backbone — accepted by the product owner 2026-09-26",
+      "source": {
+        "config": "mmdet::rtmdet/rtmdet_m_8xb32-300e_coco.py",
+        "checkpoint": "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_m_8xb32-300e_coco/rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.pth"
+      },
+      "note": "The default detector with a DYNAMIC batch axis for the Phase 4 batched GPU scheduler. Graph edit only (6 Reshape targets [1,-1,C] -> [0,-1,C], symbolic 'batch' dim); weights unchanged, so licence and provenance are the source model's. Batch-1 output is bit-identical to the source (CPU and CUDA); batch-B equals B single runs within float tolerance. Registered in Phase 4.",
+      "derived_from": {
+        "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.onnx",
+        "sha256": "7ba76371b2e3e170687baeead44eebf6fdbecce75ed3c03272924cf9c8631c49",
+        "tool": "tools/make_dynamic_batch.py --check"
+      }
+    },
+    {
+      "file": "lifeguard_dfine_m_devtrain_v1_dynbatch.onnx",
+      "role": "detector",
+      "key": "lifeguard_dfine_m_devtrain_v1_dynbatch",
+      "kind": "det",
+      "source": {
+        "framework": "D-FINE (Apache-2.0)",
+        "base_checkpoint": "dfine_m_coco.pth",
+        "config": "build/phase7/dfine/run_m_640/lifeguard_dfine_m.yml",
+        "trained_checkpoint": "build/phase7/dfine/run_m_640/run/best_stg2.pth"
+      },
+      "sha256": "edb6f337a8e4854ed4a5737ad65c8c02b7e352e2139ed9a338a7de398d1bafec",
+      "bytes": 77736761,
+      "licence": "Apache-2.0 (D-FINE code)",
+      "commercial_ok": true,
+      "data_provenance": "D-FINE dfine_m_coco.pth (COCO-only, Apache-2.0) fine-tuned on UNREVIEWED RTMDet pseudo-labels of the 10 dev clips of eval/heldout_v1 (public web footage, rights not cleared) - dev_only, never a default",
+      "classes": [
+        "person_in_water",
+        "person_out_of_water"
+      ],
+      "dev_only": true
+    },
+    {
+      "role": "detector",
+      "licence": "Apache-2.0 (mmdet code) + COCO (images/annotations) — no Objects365",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "COCO 2017 train (annotations CC-BY-4.0; images Flickr, per-image CC licences) + ImageNet-pretrained CSPNeXt backbone — accepted by the product owner 2026-09-26",
+      "source": {
+        "config": "mmdet::rtmdet/rtmdet_m_8xb32-300e_coco.py",
+        "checkpoint": "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_m_8xb32-300e_coco/rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.pth"
+      },
+      "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch_960.onnx",
+      "key": "rtmdet_m_coco_only_dynbatch_960",
+      "sha256": "d083313f3c6572c8dc488b077d335d6dd65ea1c36b1f0d791f822916e22d26f8",
+      "bytes": 109526304,
+      "note": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx re-instantiated at 960x960 input (Phase 8 resolution lever): anchor grids and shapes only (10 edits), weights unchanged. Check: {\"frames\": 12, \"people_640\": 14, \"found_again\": 14, \"min_iou\": 0.718, \"ok\": true}",
+      "derived_from": {
+        "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx",
+        "sha256": "9f8017326ac1a48ddd845a33ccb0a313d798ce133ad314d6b6cc9572e623579c",
+        "tool": "tools/make_input_size.py --size 960"
+      }
+    },
+    {
+      "role": "detector",
+      "licence": "Apache-2.0 (mmdet code) + COCO (images/annotations) — no Objects365",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "COCO 2017 train (annotations CC-BY-4.0; images Flickr, per-image CC licences) + ImageNet-pretrained CSPNeXt backbone — accepted by the product owner 2026-09-26",
+      "source": {
+        "config": "mmdet::rtmdet/rtmdet_m_8xb32-300e_coco.py",
+        "checkpoint": "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_m_8xb32-300e_coco/rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c.pth"
+      },
+      "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch_1280.onnx",
+      "key": "rtmdet_m_coco_only_dynbatch_1280",
+      "sha256": "af6b2bdd0c1908f183b268a60fbdc03bab63058faf1522356e3cbc5f979edbf4",
+      "bytes": 109527101,
+      "note": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx re-instantiated at 1280x1280 input (Phase 8 resolution lever): anchor grids and shapes only (10 edits), weights unchanged. Check: {\"frames\": 12, \"people_640\": 14, \"found_again\": 14, \"min_iou\": 0.711, \"ok\": true}",
+      "derived_from": {
+        "file": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx",
+        "sha256": "9f8017326ac1a48ddd845a33ccb0a313d798ce133ad314d6b6cc9572e623579c",
+        "tool": "tools/make_input_size.py --size 1280"
+      }
+    },
+    {
+      "file": "rtmpose-m_8xb256-420e_coco-256x192_dynbatch.onnx",
+      "role": "pose",
+      "key": "rtmpose_m_coco",
+      "sha256": "8f32ccca38e0d22dde6f170eaca2d7ca8be6cd2ca13d42b5747771b8f7f81bb7",
+      "licence": "Apache-2.0 (mmpose code + weights; Copyright (c) OpenMMLab) + COCO (images/annotations)",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "Fine-tuned on COCO 2017 train keypoints only (annotations CC-BY-4.0; images Flickr, per-image CC licences). DISCLOSED: OpenMMLab initialised this checkpoint's CSPNeXt-m backbone from a model pre-trained on AI Challenger + COCO (the 'pt-aic-coco' in its file name). The body7 RTMPose weights (7 datasets incl. AI Challenger, MPII, CrowdPose, Halpe) are never used. Shipping this checkpoint was decided by the product owner 2026-10-14.",
+      "source": {
+        "config": "mmpose::body_2d_keypoint/rtmpose/coco/rtmpose-m_8xb256-420e_coco-256x192.py",
+        "checkpoint": "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-m_simcc-coco_pt-aic-coco_420e-256x192-d8dd5ca4_20230127.pth",
+        "export": "tools/export_rtmpose.py (MMDeploy ONNX Runtime SimCC path, dynamic batch; outputs simcc_x (B,17,384), simcc_y (B,17,512)); TensorRT FP16 engines are built from it on the target GPU (tools/build_trt_engines.py)"
+      },
+      "metrics": {
+        "coco_val_ap": 0.758
+      },
+      "note": "Shipped pose model (thresholds 2.5.0 POSE_ENABLED, top-down on RTMDet boxes). sha256 is 'pending-export' until tools/export_rtmpose.py --register writes the exported file's hash: verify_models.py fails the default until then, so an unverified file is never loaded.",
+      "bytes": 54369767
+    },
+    {
+      "file": "clip_vit_b32_scene.onnx",
+      "role": "scene",
+      "key": "clip_vit_b32_scene",
+      "sha256": "b67933edf391a9b9913d264dcd15335dc5f4082331fdc97418bffc4d60117899",
+      "bytes": 351841835,
+      "licence": "MIT (OpenAI CLIP code and ViT-B/32 weights)",
+      "commercial_ok": true,
+      "dev_only": false,
+      "data_provenance": "OpenAI CLIP: 400M image-text pairs collected from the public internet (WIT, not released); accepted as provenance by the product owner 2026-10-15. Zero-shot only: no Life Guard footage used.",
+      "source": {
+        "code": "https://github.com/openai/CLIP @ dcba3cb2e2827b402d2701e7e1c7d9fed8a20ef1",
+        "checkpoint": "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt (sha256 = the URL hash, checked by clip.load)"
+      },
+      "note": "v4 pool-vs-other scene SUGGESTION (vision/scene/scene_classifier.py), keyframes only, never per frame. Built by tools/export_scene_clip.py: prompts baked into the graph, output = class probabilities; classes in the ONNX metadata."
+    },
+    {
+      "file": "lifeguard_dfine_l_pool_v0.onnx",
+      "role": "detector",
+      "key": "lifeguard_dfine_l_pool_v0",
+      "kind": "det",
+      "source": {
+        "framework": "D-FINE (Apache-2.0)",
+        "base_checkpoint": "dfine_l_coco.pth",
+        "config": "training/configs/dfine_l_v0.yml",
+        "trained_checkpoint": "training/work_dirs/dfine_l_v0/best_stg1.pth"
+      },
+      "sha256": "e93b5e02ed0452ebb0738dd0d1283ec8d5c66b7bef9eb67991da838ea1bcf8e1",
+      "bytes": 124956086,
+      "licence": "Apache-2.0 (D-FINE code)",
+      "commercial_ok": true,
+      "data_provenance": "D-FINE-L COCO-only checkpoint (Apache-2.0) fine-tuned on 211 seed frames of this pool's own footage (public web footage, rights not cleared): owner-verified boxes plus unaudited Claude/verifier labels, 2026-10 trial v0c - dev_only, never a default",
+      "classes": [
+        "swimmer",
+        "person_out_of_water"
+      ],
+      "dev_only": true
+    }
+  ],
+  "defaults": {
+    "detector": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx",
+    "pose": "rtmpose-m_8xb256-420e_coco-256x192_dynbatch.onnx"
+  }
+}

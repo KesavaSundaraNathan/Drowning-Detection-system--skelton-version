@@ -1,0 +1,34 @@
+# Local hooks only: they run the hash-locked tools already in .venv, so pre-commit never
+# downloads hook environments from the internet and always matches CI's versions.
+# Install once:  .venv\Scripts\pre-commit install
+# The full gate set (licences, pip-audit, frontend, GPU) runs in tools/ci.ps1.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: .venv/Scripts/python.exe -m ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: .venv/Scripts/python.exe -m ruff format
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: .venv/Scripts/python.exe -m mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: check-locks
+        name: lock policy (pinned, hashed, no torch in serving)
+        entry: .venv/Scripts/python.exe tools/check_locks.py
+        language: system
+        files: ^requirements/
+        pass_filenames: false
+      - id: no-large-or-forbidden-files
+        name: no weights / footage / secrets committed
+        entry: "model weights, footage, databases, keys and .env files must never be committed"
+        language: fail
+        files: "(?i)\\.(onnx|pth|pt|engine|mp4|avi|mov|mkv|db|key|pem)$|(^|/)\\.env$|^\\.claude/(launch\\.json|settings\\.local\\.json)$|(^|/)\\.env\\.(?!example$)[^/]+$"

@@ -1,0 +1,9 @@
+/* [Phase 9b] v2's typefaces, self-hosted (SIL OFL 1.1, @fontsource): v2 loaded them from Google Fonts, which the
+   v3 CSP (font-src 'self') blocks and an offline pool server cannot reach. */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";

@@ -1,0 +1,101 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_floatable_drowning_v2",
+  "video": "../../build/v2_baseline/Datasets/floatable drowning (2).mp4",
+  "camera_id": "ds_floatable_drowning_v2",
+  "split": "test",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 1920,
+  "height": 1080,
+  "frame_count": 884,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Baby pool; a baby slips out of its neck float at ~15 s and sinks; carer is turned away; picked up at ~28 s. Zoom/cut at ~12 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          780,
+          190,
+          1070,
+          360,
+          "partial"
+        ],
+        [
+          430,
+          760,
+          230,
+          1080,
+          500,
+          "partial"
+        ],
+        [
+          600,
+          760,
+          190,
+          1150,
+          480,
+          "partial"
+        ],
+        [
+          780,
+          798,
+          187,
+          1144,
+          463,
+          "partial"
+        ],
+        [
+          860,
+          740,
+          280,
+          1161,
+          542,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          429,
+          "in_water"
+        ],
+        [
+          430,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          779,
+          "in_water"
+        ],
+        [
+          780,
+          859,
+          "in_water"
+        ],
+        [
+          860,
+          883,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "FLOATABLE_FAILURE",
+      "start_frame": 430,
+      "end_frame": 860,
+      "staged": false
+    }
+  ]
+}

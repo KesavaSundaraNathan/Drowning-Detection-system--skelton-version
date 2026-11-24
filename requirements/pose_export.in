@@ -1,0 +1,20 @@
+# Offline, ONE-OFF pose export environment (tools/export_rtmpose.py): RTMPose-m COCO .pth -> ONNX.
+# A throwaway venv (build/pose_export_venv) on a developer machine - never installed on a serving box,
+# never imported by the server (tests/unit/test_import_boundaries.py). Lock it where the OpenMMLab
+# wheel index is reachable (mmcv has NO wheel on PyPI - only a source archive that needs a C++ compiler -
+# so it must come from the OpenMMLab index below; if that index has no wheel for your Python, pip tries to compile):
+#   python tools/lock.py pose_export
+--extra-index-url https://download.pytorch.org/whl/cpu
+--find-links https://download.openmmlab.com/mmcv/dist/cpu/torch2.1/index.html
+
+torch==2.1.2+cpu                 # BSD-3 - the newest torch mmcv 2.1 ships CPU wheels for
+torchvision==0.16.2+cpu          # BSD-3
+mmengine==0.10.7                 # Apache-2.0
+mmcv==2.1.0                      # Apache-2.0
+mmdet==3.3.0                     # Apache-2.0 - RTMPose's CSPNeXt backbone is built from mmdet (_scope_='mmdet')
+mmpose==1.3.2                    # Apache-2.0 - RTMPose config + model (Copyright (c) OpenMMLab)
+mmdeploy==1.3.1                  # Apache-2.0 - ONNX Runtime SimCC export path (simcc_x, simcc_y; dynamic batch)
+onnx>=1.22                       # Apache-2.0
+onnxruntime>=1.19                # MIT - validation of the export against the PyTorch reference
+opencv-python-headless>=4.8      # Apache-2.0
+numpy<2                          # BSD-3 - mmcv 2.1 / torch 2.1 are built against NumPy 1.x

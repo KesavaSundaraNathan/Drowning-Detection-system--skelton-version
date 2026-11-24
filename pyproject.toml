@@ -1,0 +1,120 @@
+# Life Guard v3 — tool configuration.
+# Dependencies are NOT declared here: they live in requirements/*.in and are
+# installed only from the hash-locked requirements/*.lock files (pip-tools).
+
+[project]
+name = "lifeguard"
+version = "3.0.0.dev0"
+requires-python = ">=3.12,<3.13"
+description = "Pool drowning-detection assist system (ASSIST / PILOT, not a certified life-saving system)"
+
+# ── ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["backend", "tools", "tests", "training"]
+# docs/phase_reports holds FROZEN evidence (byte-identical to what produced each phase's results);
+# its Phase 0 comparator is ported, under full lint/type gates, into backend/lifeguard/eval in Phase 3.
+# [Phase 6] docs/evidence: scripts that produced recorded evidence (kept byte-identical); training/configs: the mmengine
+# config DSL (`_base_` inheritance, dict(...) calls). training/tools has its own reduced floor (training/tools/ruff.toml).
+extend-exclude = [
+    "frontend", "backend/lifeguard/db/migrations", "docs/phase_reports", "docs/evidence", "training/configs",
+    "reports", "research_notes",  # the owner's research write-ups (markdown with code samples)
+]
+# the excludes also hold for paths passed explicitly (pre-commit passes staged file names)
+force-exclude = true
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",      # pycodestyle / pyflakes
+    "I",                # isort
+    "B",                # bugbear
+    "UP",               # pyupgrade
+    "S",                # flake8-bandit (security)
+    "T20",              # ban print() — logging only (audit #9)
+    "BLE",              # blind `except Exception` must log/re-raise (audit #9)
+    "SIM", "RUF", "PTH", "C4", "DTZ",  # naive datetimes banned (DTZ)
+]
+# Typographic characters used in the v2 baseline's docstrings / comments (ported verbatim).
+allowed-confusables = ["–", "×", "−"]
+
+[tool.ruff.lint.per-file-ignores]
+# assert / fake secrets / non-crypto random are fine in tests only
+"tests/**" = ["S101", "S105", "S106", "S107", "S311", "PTH"]
+# tests carried over VERBATIM from the v2 baseline (docs/phase_reports/phase3/port_tests.py): v2 test
+# scaffolding (imports after sys.path setup), naive local wall-clock inputs to schedule tests, style.
+"tests/vision/**" = ["B007", "B905", "DTZ001", "DTZ005", "E402", "E731", "RUF012", "RUF046", "RUF059", "S603"]
+"tests/training/**" = ["B007", "B905", "DTZ001", "DTZ005", "E402", "E731", "RUF046", "RUF059", "S603"]
+"tools/**" = ["T20"]    # CLI tools print their report
+# Code ported VERBATIM from the v2 baseline (Phase 3 parity; docs/phase_reports/phase3/verify_verbatim.py).
+# These style rules would rewrite ported arithmetic / control flow - B905 adds zip(strict=True), which can
+# raise where v2 silently truncated; RUF046 drops int() around round() of possibly-NumPy values; SIM114
+# merges if/elif arms - so they are not applied to the ported files (revisit when a module is rewritten in
+# Phase 7). Security / robustness rules (S, BLE, T20, DTZ) are NOT exempted.
+"backend/lifeguard/eval/{compare,metrics,runner,simulation}.py" = ["B007", "B905", "C408", "C416", "E741", "F841", "RUF005", "RUF007", "RUF046", "RUF023", "RUF059", "SIM101", "SIM102", "SIM103", "SIM114"]
+"backend/lifeguard/vision/{behaviour/classifier,behaviour/features,behaviour/learned/features,behaviour/numeric,behaviour/result,behaviour/samples,behaviour/temporal,inference/decode,inference/detector,inference/enhance,model_view,scene/category,scene/geometry,scene/pool_geometry,scene/scene_tracker,scene/water,scene/zone_state,tracking/bytetrack/tracker,tracking/global_tracker,tracking/motion,tracking/tracker}.py" = ["B007", "B905", "C408", "C416", "E741", "F841", "RUF005", "RUF007", "RUF046", "RUF023", "RUF059", "SIM101", "SIM102", "SIM103", "SIM114"]
+# training library moved VERBATIM from the v2 baseline (docs/phase_reports/phase3/port_training.py); its CLI
+# entry points print their reports. Same verbatim-preserving exemptions as the ported vision code.
+"training/lifeguard_training/behavior/dataset.py" = ["B905", "RUF046"]
+"training/lifeguard_training/behavior/train.py" = ["B905", "T20"]
+"training/lifeguard_training/dfine/export.py" = ["PTH123", "RUF059", "T20"]
+"training/lifeguard_training/dfine/train.py" = ["S603", "T20"]       # developer CLI: launches D-FINE train.py
+"training/lifeguard_training/behavior/cli.py" = ["T20"]
+# evaluation CLIs print their report (the library modules of lifeguard.eval do not)
+"backend/lifeguard/eval/{evaluate,compare,trace}.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lifeguard", "lifeguard_training"]
+
+# ── mypy ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "backend"
+packages = ["lifeguard"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+
+# Strict where safety/security logic lives (plan: core/, app/, alerts/, live/).
+# NOTE (found in Phase 3): `strict = true` in an overrides block took effect for the WHOLE package, so
+# db/, jobs/, cli and supervisor have been strict-checked since Phase 1 - kept that way.
+[[tool.mypy.overrides]]
+module = ["lifeguard.core.*", "lifeguard.app.*", "lifeguard.alerts.*", "lifeguard.live.*"]
+strict = true
+
+# The vision pipeline and evaluation harness were ported VERBATIM from the v2 baseline (Phase 3 parity),
+# which had no type annotations to strict standard. They get the plan's non-strict profile: bodies are
+# still type-checked (check_untyped_defs), but unannotated defs / implicit Any are allowed.
+[[tool.mypy.overrides]]
+module = ["lifeguard.vision.*", "lifeguard.eval.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_any_generics = false
+warn_return_any = false
+check_untyped_defs = true
+
+# No type information published by these wheels.
+[[tool.mypy.overrides]]
+module = ["onnxruntime", "scipy", "scipy.*"]
+ignore_missing_imports = true
+
+# ── pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+pythonpath = ["backend", "training", "."]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config -p no:cacheprovider"
+xfail_strict = true
+filterwarnings = ["error"]  # a new deprecation is a failure, not noise
+markers = [
+    "gpu: needs a CUDA GPU + the serving lock's NVIDIA wheels (not run in hosted CI)",
+    "integration: talks to local services (webhook receiver, ntfy, SMTP)",
+    "soak: long-running multi-camera soak (Phase 4)",
+    "chaos: kills processes / streams (Phase 4)",
+]
+
+# ── bandit ────────────────────────────────────────────────────────────────────
+[tool.bandit]
+exclude_dirs = ["tests", "frontend", ".venv"]

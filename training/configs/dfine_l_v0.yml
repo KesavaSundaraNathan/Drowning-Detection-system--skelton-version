@@ -1,0 +1,53 @@
+# D-FINE-L v0 (Phase 6, option A): 2 classes (0 swimmer, 1 person), input 1024, COCO weights via -t, AMP + EMA,
+# seed R1 (reviewed x2 + auto-accepted x1). Run through training\tools\train_dfine.py (registers PoolPhotometric).
+__include__: ['../third_party/dfine/configs/dfine/dfine_hgnetv2_l_coco.yml']
+
+output_dir: C:/lifeguard/training/work_dirs/dfine_l_v0
+num_classes: 2
+remap_mscoco_category: False
+eval_spatial_size: [1024, 1024]  # h w; the decoder anchors are built for this size
+checkpoint_freq: 10              # numbered checkpoint every 10 epochs (~0.4 GB each); last.pth is written every epoch (resume)
+print_freq: 25
+use_amp: True
+use_ema: True
+ema: {type: ModelEMA, decay: 0.9999, warmups: 500, start: 0}
+
+epochs: 60                       # augmentation and multi-scale stop for the last 9 epochs (15 %)
+lr_warmup_scheduler: {type: LinearWarmup, warmup_duration: 300}
+
+train_dataloader:
+  dataset:
+    img_folder: C:/lifeguard/training/data/frames
+    ann_file: C:/lifeguard/training/data/coco/seed_r1/train.json
+    transforms:
+      ops:
+        - {type: PoolPhotometric, p: 0.8}      # HSV / brightness, glare, motion blur, noise, JPEG (Albumentations)
+        - {type: RandomZoomOut, fill: 0, side_range: [1.0, 2.0]}
+        - {type: RandomIoUCrop, p: 0.5}
+        - {type: SanitizeBoundingBoxes, min_size: 1}
+        - {type: RandomHorizontalFlip}         # no vertical flips, no strong warps
+        - {type: Resize, size: [1024, 1024]}
+        - {type: SanitizeBoundingBoxes, min_size: 1}
+        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+        - {type: ConvertBoxes, fmt: 'cxcywh', normalize: True}
+      policy:
+        name: stop_epoch
+        epoch: 51
+        ops: ['PoolPhotometric', 'RandomZoomOut', 'RandomIoUCrop']
+  collate_fn:
+    base_size: 1024
+    base_size_repeat: 4
+    stop_epoch: 51
+  total_batch_size: 2            # batch 4 peaked at 10.4 GB (> 8 GB, spilled to shared memory, 11.6 s/step); batch 2: 5.4 GB, ~1.2 s/step
+  num_workers: 2
+
+val_dataloader:
+  dataset:
+    img_folder: C:/lifeguard/training/data/frames
+    ann_file: C:/lifeguard/training/data/coco/seed_r1/val.json
+    transforms:
+      ops:
+        - {type: Resize, size: [1024, 1024]}
+        - {type: ConvertPILImage, dtype: 'float32', scale: True}
+  total_batch_size: 4
+  num_workers: 2

@@ -1,0 +1,8 @@
+/* [Phase 9b] The v2 look (Apple-glass light theme + indigo dark theme, Tailwind v4) over the v3 operator UI.
+   Order: fonts, Tailwind, v2 tokens + utilities (theme.css, ported verbatim), v3 component classes. */
+@import "./fonts.css";
+@import "tailwindcss" source(none);
+@source "../**/*.{ts,tsx}";
+@import "tw-animate-css";
+@import "./theme.css";
+@import "./components.css";

@@ -1,0 +1,62 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_passive_drowning_v3",
+  "video": "../../build/v2_baseline/Datasets/passive drowning (3).mp4",
+  "camera_id": "ds_passive_drowning_v3",
+  "split": "test",
+  "labelled": true,
+  "fps": 59.83801810385898,
+  "width": 848,
+  "height": 480,
+  "frame_count": 1884,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Phone recording of a monitor; motionless swimmer near the lifeguard chair; lifeguard jumps in at ~21 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          195,
+          150,
+          320,
+          275,
+          "partial"
+        ],
+        [
+          1700,
+          195,
+          150,
+          320,
+          275,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          1699,
+          "in_water"
+        ],
+        [
+          1700,
+          1883,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "PASSIVE_DROWNING",
+      "start_frame": 0,
+      "end_frame": 1700,
+      "staged": false
+    }
+  ]
+}

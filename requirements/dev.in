@@ -1,0 +1,23 @@
+# Development + CI environment = the serving runtime + tooling.
+# The -c line forces every shared package to the exact serving.lock version,
+# so tests run against what production runs.
+-c serving.lock
+-r serving.in
+
+# ── Locking ───────────────────────────────────────────────────────────────────
+pip-tools>=7.4                   # BSD-3 — serving/dev locks
+uv>=0.12                         # MIT OR Apache-2.0 — training lock (pip-tools mishandles +cu121 wheels when hashing)
+
+# ── Quality gates ─────────────────────────────────────────────────────────────
+ruff>=0.6                        # MIT
+mypy>=1.11                       # MIT
+types-pywin32                    # Apache-2.0 - typeshed stubs: DPAPI calls are type-checked
+pre-commit>=3.8                  # MIT
+bandit>=1.7.9                    # Apache-2.0
+pip-audit>=2.7                   # Apache-2.0
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+pytest>=8.3                      # MIT
+httpx2>=2.13                     # BSD-3 — Starlette TestClient (httpx is deprecated for it)
+onnx>=1.22                       # Apache-2.0 — test fixtures; >=1.22 fixes 9 advisories in 1.17 (pip-audit)
+aiosmtpd>=1.4.6                  # Apache-2.0 — real SMTP server with STARTTLS for the channel tests (approved, Phase 6)

@@ -1,0 +1,88 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_passive_drowning_v2",
+  "video": "../../build/v2_baseline/Datasets/passive drowning (2).mp4",
+  "camera_id": "ds_passive_drowning_v2",
+  "split": "dev",
+  "labelled": true,
+  "fps": 59.96207114533647,
+  "width": 848,
+  "height": 480,
+  "frame_count": 1739,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Phone recording of an NVR: multi-view until ~9 s, then the same lifeguard rescue as active drowning (3). EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          540,
+          60,
+          160,
+          460,
+          330,
+          "partial"
+        ],
+        [
+          900,
+          60,
+          160,
+          460,
+          330,
+          "partial"
+        ],
+        [
+          1200,
+          60,
+          160,
+          460,
+          330,
+          "partial"
+        ],
+        [
+          1400,
+          60,
+          160,
+          460,
+          330,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1199,
+          "in_water"
+        ],
+        [
+          1200,
+          1399,
+          "in_water"
+        ],
+        [
+          1400,
+          1738,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "PASSIVE_DROWNING",
+      "start_frame": 540,
+      "end_frame": 1400,
+      "staged": false
+    }
+  ]
+}

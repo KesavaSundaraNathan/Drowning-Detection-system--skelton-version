@@ -1,0 +1,782 @@
+{
+  "schema": "aquaguard-thresholds/1",
+  "version": "2.43.0",
+  "description": "Detection, tracking, scene and behaviour thresholds and switches. Version 2.0.0 is the v2-baseline values, unchanged (Phase 3 parity). Every change bumps `version`, adds a `changelog` entry with its evaluation evidence, and updates the pinned sha256 in tests/unit/test_thresholds.py; the server audits the active version + sha256 at startup.",
+  "changelog": [
+    {
+      "version": "2.0.0",
+      "date": "2026-10-07",
+      "change": "Imported verbatim from the v2 baseline (tag v2-baseline, backend/config/constants.py, the named thresholds of detection/risk_engine.py + classifier.py, and the behaviour-affecting backend/config/settings.py defaults). New switches ID_STITCHING=true (v2 always stitched) and GLOBAL_ALERT_DEDUP=false (plan).",
+      "source_sha256": {
+        "backend/config/constants.py": "0b3c4623d74b31c5953951223126224f6038dacf9b980f68ac33a06aaebb30af",
+        "backend/config/settings.py": "c80cd8979b340b3be79eee1c99216f9b6785efd296c9523ca0db0fd2d6437662",
+        "backend/detection/risk_engine.py": "27ca66806ca4a899777236ce777f587deb49343e64a2c5d98dffa0fc2711879b",
+        "backend/detection/classifier.py": "e97278de19dca80a8479d0b2f9b0616ec3f05300b7ddd9f314ce270f88f98aff"
+      },
+      "evidence": "docs/phase_reports/completed_phase_3.md (parity)"
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-10-08",
+      "change": "TRACK_FAINT_BIRTHS true -> false. Phase 7 4-arm A/B on the held-out test split of eval/heldout_v1 (frozen and committed with its decision rule before measuring, 44cd5cf): faint births did not win (with stitching on: 1 more false alert, same recall; with stitching off: equal on every criterion; a tie is not a win). ID_STITCHING stays true: it won on test event recall in both pairings (1/5 vs 0/5).",
+      "evidence": "docs/phase_reports/completed_phase_7.md; docs/phase_reports/phase7/evidence/ab_tracking_flags.json"
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-10-09",
+      "change": "Phase 11 WP1 live cross-camera identity switches (PoolTracker, live multi-camera only; single-camera and upload analysis unchanged). New POOL_HANDOFF_GUARD = true (+ HANDOFF_GUARD_S 1.0): a pure handoff never links a new track into a camera that saw the person vanish - without it a swimmer re-acquired where someone had just gone under inherited their id and the SUBMERSION was missed (raised 1/5 vs 5/5). New POOL_RANK_BY_DISTANCE = false: exact tie on every criterion. New POOL_ID_REPAIR = true (+ REPAIR_SPLIT_M 2.0, REPAIR_MIN_UPDATES 5): crossing-swap repair; shared-id frames 1518 -> 1347, handoffs kept 99.11 % -> 99.24 %, missed / false SUBMERSION 0 / 0 in both arms, S7 same-lane passing through a blind band 215/215 handoffs kept. Decision rules registered before measuring (9d8117e, b7e4f25); the guard rule amended with the project owner's approval (a4a90f8: no net-new false SUBMERSION vs OFF; the one false SUBMERSION occurred identically in every arm, v2 included).",
+      "evidence": "eval/site/levers_phase11.json; docs/phase_reports/phase11/evidence/wp1_identity_ab.json; docs/phase_reports/phase11/evidence/wp1_repair_ab.json"
+    },
+    {
+      "version": "2.3.0",
+      "date": "2026-10-09",
+      "change": "Phase 11 WP2 per-camera alert responsibility (live multi-camera only). New RESPONSIBILITY_GATING = false: a non-responsible camera's behaviour alert would be recorded but not sound while a responsible MONITORED camera sees the same person (never SUBMERSION / FAULT); OFF until the pre-registered site replay decides (63f90c3) - no detection behaviour changes in this version. New RESP_DENSITY_RATIO 1.25 and RESP_MIN_PX_PER_M 25.0 define responsibility (pixels per metre of pool from the calibration); on the 4-corner-camera simulation rig every 0.5 m cell has a responsible camera and 30 % of cells are an overlap band.",
+      "evidence": "eval/site/levers_phase11.json (RESPONSIBILITY_GATING); docs/phase_reports/phase11/WP2.md"
+    },
+    {
+      "version": "2.4.0",
+      "date": "2026-10-09",
+      "change": "Phase 11 WP3 switches, all shipped so detection behaviour is UNCHANGED. MULTIVIEW_CONFIRM = false (+ MULTIVIEW_MIN_SCORE 0.25): rule e595224 - the held-out split has no multi-camera clip, so its A/B is an exact tie (OFF); re-decided at the WP6 site replay. DET_TILING_REGION = responsible: only acts if DET_TILING is switched on (Phase 8: off). GLARE_HOLD = false (+ GLARE_HOLD_MAX_S 4.0, GLARE_AUTO_* mask parameters): registered battery (5316040) - with the hold, 84 vs 76 of 95 people keep their id through glare and false SUBMERSION 10 vs 14, never delays a true SUBMERSION, but the rule requires 0 missed over G4+G5 and G5 (someone else surfaces where a person went under) is missed 5/5 in both arms; a disclosed wide-glare probe shows the hold itself hides that submersion 5/5 (off: 0/5). OFF.",
+      "evidence": "eval/site/levers_phase11.json; docs/phase_reports/phase11/WP3.md; docs/phase_reports/phase11/evidence/wp3_glare_ab.json"
+    },
+    {
+      "version": "2.5.0",
+      "date": "2026-10-14",
+      "change": "Pose restored, strictly top-down (owner decisions 2026-10-14): RTMDet -> ByteTrack -> RTMPose on every tracked box, so the v2 pose cues - torso angle, stroke frequency, wrist-vs-shoulder arm amplitude / thrashing, face-down, pose_lost - get keypoints again. Pose model: RTMPose-m COCO 256x192 (never the body7 weights). New POSE_ENABLED = true; POSE_MAX_PER_FRAME 32 and POSE_INPUT_RGB false are v2's values. Pose frame-skipping (owner rule: stride 2, stable tracks only): POSE_STRIDE 2 = a track may skip pose on alternate frames ONLY when it is confirmed, at least POSE_STABLE_MIN_FRAMES 15 frames old, its box is at least POSE_SMALL_BOX_PX 96 px tall (far-end swimmers always get pose), and its last behaviour result was not drowning, risk < POSE_SKIP_MAX_RISK 0.20 and pose-reliable. A skipped frame never forms a behaviour sample on its own, so it can never read as a pose collapse / submersion. The detector is still the COCO-only RTMDet-m. With POSE_ENABLED=false the pipeline is the 2.4.0 pipeline. Held-out evidence is PENDING: the re-run needs the exported pose weights and the eval clips, which are on the owner's machine (tools/pose_eval.py writes the A/B).",
+      "evidence": "PENDING - docs/phase_reports/phase12/pose_restore.md (to be completed with the held-out A/B from tools/pose_eval.py)"
+    },
+    {
+      "version": "2.5.1",
+      "date": "2026-10-14",
+      "change": "POSE_INPUT_RGB false -> true. The v2 value fed RTMPose the OpenCV BGR crop with RGB mean/std; MMPose's own pipeline for rtmpose-m_8xb256-420e_coco-256x192 flips to RGB first (data_preprocessor bgr_to_rgb=True). Measured on the exported model with tools/export_rtmpose.py against MMPose inference_topdown on real frames: BGR-as-is differs by up to 227.00 model-input px on a confident keypoint, RGB-flipped by 0.00. No other threshold changes.",
+      "evidence": "tools/export_rtmpose.py validation output (owner's machine, 2026-10-14): 'pipeline vs MMPose (worst confident keypoint, model-input px): BGR-as-is 227.00, RGB-flipped 0.00'"
+    },
+    {
+      "version": "2.6.0",
+      "date": "2026-10-20",
+      "change": "New keys only, no behaviour change: the ByteTrack values that were hardcoded become configurable with their old values as defaults - TRACK_LOW_SCORE_THRESHOLD 0.1 (2nd-association floor), TRACK_BIRTH_SCORE_MARGIN 0.1 (birth = TRACK_HIGH_SCORE_THRESHOLD + margin), TRACK_SECOND_MATCH_IOU 0.5 (2nd association, cost 0.5), TRACK_UNCONFIRMED_MATCH_IOU 0.3 (unconfirmed tracks, cost 0.7), TRACK_KF_STD_POSITION 0.05 (= 1/20) and TRACK_KF_STD_VELOCITY 0.00625 (= 1/160) Kalman noise. Prepares the fall/submersion continuity tuning (branch tune/bytetrack-continuity).",
+      "evidence": "Defaults are bit-identical to the old literals (tests/vision/test_bytetrack.py::test_configured_defaults_equal_the_old_hardcoded_values); tests/vision and tests/unit unchanged."
+    },
+    {
+      "version": "2.7.0",
+      "date": "2026-10-20",
+      "change": "New keys, behaviour unchanged by default: LAND_FROM_WATER_ESTIMATE false (no zones: when leg keypoints can't prove a person is on land, feet confidently outside the estimated water by LAND_WATER_MARGIN x box height count as land, as the no-pose path already did) and LAND_WATER_MARGIN 0.1. Switched on only after the dev/test A/B in docs/evidence/v7/.",
+      "evidence": "Lane clip (active drowning (2)), no zones: water estimator confident, deck person's feet outside the water in 645/791 frames, knees >= LAND_KP_CONF in only 200/791 -> never classed on land, 8 PASSIVE_DROWNING alerts."
+    },
+    {
+      "version": "2.7.1",
+      "date": "2026-10-20",
+      "change": "LAND_FROM_WATER_ESTIMATE false -> true. No zones: feet confidently outside the estimated water now prove 'on land' when leg keypoints can't. Test 3/5 events (unchanged), false alerts 8 -> 3; dev false alerts 55 -> 37; the lane-clip deck person 7 alerts -> 0; normal swimming 0. The one dev event the scorer lost was a PASSIVE alert on the red slide on the deck, 6 s after the event ended (no track ever covered the victim in either run).",
+      "evidence": "docs/evidence/v7/f1_land_from_water.md (build/eval_v7/baseline vs build/eval_v7/f1_rtmdet, 16 labelled clips, High, TensorRT)"
+    },
+    {
+      "version": "2.8.0",
+      "date": "2026-10-20",
+      "change": "New keys, behaviour unchanged: DET_DETR_NMS_IOU 0.7 (the NMS IoU the DETR decode used), DET_DETR_MIN_SCORE 0.0 (no extra score floor) and DET_DETR_NESTED_IOA 0.0 (off: drop a lower-score DETR box lying this much inside a higher-scoring one). They apply to DETR-family detectors (D-FINE) only.",
+      "evidence": "D-FINE on the dev clips (1 frame/s, 619 frames): 24.7 person boxes per frame, 61 % below 0.3; 35096 nested pairs and 10072 IoU 0.45-0.7 pairs among the kept boxes."
+    },
+    {
+      "version": "2.8.1",
+      "date": "2026-10-20",
+      "change": "D-FINE (DETR) decode: DET_DETR_NMS_IOU 0.7 -> 0.5, DET_DETR_MIN_SCORE 0.0 -> 0.3, DET_DETR_NESTED_IOA 0.0 -> 0.8 (candidate F of the pre-registered dev grid). Test, run once: 4/5 events (unchanged vs D-FINE), false alerts 10 -> 4, normal-swimming false alerts 1 -> 0, time to alert median 9.6 s, latency p50 9.0 ms. RTMDet unaffected (DETR path only).",
+      "evidence": "docs/evidence/v7/f2b_dfine_precision.md (build/eval_v7/f2b_*, build/eval_v7/f2b_F_test)"
+    },
+    {
+      "version": "2.9.0",
+      "date": "2026-10-20",
+      "change": "New keys, behaviour unchanged (LIVENESS_CHECK false): vision/tracking/liveness.py classes a track outside the water whose box neither moves (LIVENESS_MAX_MOVE box heights) nor changes (mean-removed grey crop vs ~1 s earlier, peak <= LIVENESS_MIN_ACTIVITY grey levels) for LIVENESS_SECONDS as a static object (wall photo, poster, slide, monitor) and does not report it. Never in the water. LIVENESS_MIN_ACTIVITY 3.0 is a placeholder until the live measurement; LIVENESS_LOG_STATS logs per-track activity every 30 s for that measurement. SHADOW_MERGE false / SHADOW_MERGE_SECONDS 1.0: two reported tracks nested by SHADOW_IOA for that long, where hiding cannot cost a swimmer (standard CCTV, or out of the water), merge into one (the newer becomes a sticky shadow).",
+      "evidence": "Wall photo scored 0.36 (a track starts at 0.35) on the live Reception camera; the red deck slide drew a PASSIVE alert in active drowning (5) (docs/evidence/v7/f1_land_from_water.md)."
+    },
+    {
+      "version": "2.9.1",
+      "date": "2026-10-20",
+      "change": "LIVENESS_CHECK false -> true, LIVENESS_MIN_ACTIVITY 3.0 -> 2.0 (live: real people peak >= 4.15, static fixed-camera objects <= 1.23), SHADOW_MERGE false -> true. Live: no real person classed static; nested duplicate pairs in track snapshots 3/24 -> 0/59. Eval: RTMDet identical on all 16 clips; D-FINE test 4/5 -> 5/5, test FA 4 -> 3, dev FA 44 -> 47, normal swimming 0.",
+      "evidence": "docs/evidence/v7/f3_liveness_merge.md"
+    },
+    {
+      "version": "2.10.0",
+      "date": "2026-10-20",
+      "change": "New keys, behaviour unchanged (DET_MOSAIC false): resolution mosaic. The water rows where people are small (below the far end DET_MOSAIC_FAR_FRAC, above DET_MOSAIC_NEAR_FRAC on frames larger than the detector input) are re-scanned at DET_MOSAIC_GAIN x the full-frame resolution, packed into at most DET_MOSAIC_MAX_CALLS extra detector calls, fused with the full-frame boxes. Admission counts the extra calls (live/runtime.detector_calls_per_frame).",
+      "evidence": "Baseline dev in-water recall 0.03 for 40-80 px people; the ladder victim in active drowning (2) scores 0.02-0.09 at 626x360 and 0.2-0.38 in a 2-3x upscaled crop (docs/v7_fix_plan.md)."
+    },
+    {
+      "version": "2.10.1",
+      "date": "2026-10-20",
+      "change": "LAND_FROM_WATER_ESTIMATE true -> false (revert of 2.7.1). In active drowning (6) (aerial view) the colour water estimator confidently took the most saturated blue surface outside the pool (hue 118, sat 138) for water and missed the pale pool (hue 101, sat 77); with the switch on, the toddler IN the pool was classed BYSTANDER in 8 of 10 scorings (0 of 10 with it off). A person in the water classed as on land is a safety failure, whatever the event scores say. Uploads are unaffected in practice: they use D-FINE, whose in-water / out-of-water classes decide deck vs water.",
+      "evidence": "docs/evidence/v7/f1_land_from_water.md (addendum 2026-10-20)"
+    },
+    {
+      "version": "2.11.0",
+      "date": "2026-10-20",
+      "change": "New keys, behaviour unchanged (SMALL_PERSON_GATE false): scene_tracker.small_person_gate - an ACTIVE / PASSIVE / FLOATABLE / DISTRESS result for a person whose median box height over the last 2 s is under SMALL_PERSON_PX (40) keeps its scenario and risk (shown as CAUTION) but cannot raise an alarm. SUBMERSION and ghost alerts are never gated.",
+      "evidence": "Dev + test false alerts (RTMDet, thresholds 2.9.1): 24 of 40 on boxes under 40 px (median 26 px); true event alerts: 1 of 9 under 40 px (median 64 px)."
+    },
+    {
+      "version": "2.11.1",
+      "date": "2026-10-21",
+      "change": "SMALL_PERSON_GATE on, SMALL_PERSON_PX 40 -> 50. The gate as shipped in code is the narrow one: only ACTIVE / FLOATABLE / DISTRESS calls whose pose is not reliable and whose median box height over the last 2 s is under 50 px become caution; PASSIVE_DROWNING and SUBMERSION are never gated.",
+      "evidence": "docs/evidence/v7/f5_small_person_gate.md round 2. Dev RTMDet: events 7/11 = gate off, false alerts 55 -> 49. Test, run once: RTMDet events 3/5 = off, false alerts 8 -> 7 (115.7 -> 101.3 per camera-hour); D-FINE events 4/5 = off, false alerts 4 -> 4; normal swimming 0 for both."
+    },
+    {
+      "version": "2.12.0",
+      "date": "2026-10-21",
+      "change": "New keys, behaviour unchanged (FRAME_RULES_SCALE_TO_FPS false): vision/frame_rules.frames_at scales the two rules that count CAMERA frames, POSE_STABLE_MIN_FRAMES (pose-skip eligibility) and FALL_IN_LAST_FRAMES (no-zone fall-in check), from FRAME_RULES_REFERENCE_FPS (15, the rate they were tuned at) to the analysed fps, so they keep the same seconds at 15, 18 or 30 fps. The behaviour-buffer windows (BEHAVIOR_BUFFER_FRAMES, VELOCITY_WINDOW_FRAMES) count samples taken at a fixed BEHAVIOR_SAMPLE_HZ and are not frame rules; LIVE_SCORE_EVERY_N_FRAMES is unused by the live path (scoring is every BEHAVIOR_SCORE_INTERVAL_S).",
+      "evidence": "Code only; identical at 15 fps by construction (tests/vision/test_frame_rules.py)."
+    },
+    {
+      "version": "2.12.1",
+      "date": "2026-10-21",
+      "change": "FRAME_RULES_SCALE_TO_FPS on: POSE_STABLE_MIN_FRAMES and FALL_IN_LAST_FRAMES keep their 15 fps durations at the analysed fps (18 fps: 18 and 4 frames).",
+      "evidence": "docs/evidence/v7/fps18_frame_rules.md. Dev RTMDet (clips at 20/30/60 fps): identical to off on every clip (7/11 events, 49 false alerts). Test, run once: identical to off (RTMDet 3/5, 7 false alerts; D-FINE 4/5, 4 false alerts; normal swimming 0). Live at 15 fps: no change by construction."
+    },
+    {
+      "version": "2.13.0",
+      "date": "2026-10-21",
+      "change": "New key, behaviour unchanged by default: ZONE_VOTE_DECK 0.5 (= ZONE_VOTE_WATER). With no zones and no calibration, the detector's smoothed in-water vote calls a person DECK only below ZONE_VOTE_DECK; a vote between ZONE_VOTE_DECK and ZONE_VOTE_WATER counts as no opinion and the track falls back to the no-zone colour / pose land-evidence path (monitored until proven on land; a new track starts SWIMMER).",
+      "evidence": "docs/evidence/v7/f6_uncertain_vote_deck.md. Upload swimming.mp4 (open-water backstroke, D-FINE, no camera): the swimmer's tracks 1 and 8 were BYSTANDER in 32 / 33 and 31 / 47 frames (smoothed votes 0.19-0.55 and 0.30-0.62; each started BYSTANDER on its first frame's vote). The colour water estimate was never confident and pose land evidence was 0 frames: the dry-side vote alone decided."
+    },
+    {
+      "version": "2.14.0",
+      "date": "2026-10-21",
+      "change": "New keys, behaviour unchanged by default, no zones / calibration only (the detector-vote path): ZONE_VOTE_NEW_TRACK_SWIMMER false (on: a new track starts SWIMMER whatever its first frame's vote; the vote must then hold DECK to demote it) and ZONE_VOTE_DECK_HOLD_SECONDS 0.0 (> CATEGORY_SWITCH_SECONDS: SWIMMER -> BYSTANDER on the vote needs DECK observations held this long; BYSTANDER -> SWIMMER keeps CATEGORY_SWITCH_SECONDS). Zoned cameras and vote-less detectors (RTMDet) are unaffected.",
+      "evidence": "docs/evidence/v7/f6_uncertain_vote_deck.md (part 2). swimming.mp4: tracks 1 and 8 became BYSTANDER on their first frame (votes 0.19 / 0.30); track 8 was demoted again after a 0.3 s dip of the vote to 0.46-0.50."
+    },
+    {
+      "version": "2.15.0",
+      "date": "2026-10-21",
+      "change": "New key, behaviour unchanged by default: ZONE_VOTE_DRY_CONFIDENT 0.0 (off). No zones / calibration (detector-vote path): while the smoothed vote is below it, SWIMMER -> BYSTANDER does not need the clearly-visible-pose check (the zoned path's 'a swimmer leaves the water fully visible' guard); the switch hold still applies and any frame above it with an unclear pose restarts the hold.",
+      "evidence": "docs/evidence/v7/f6_uncertain_vote_deck.md (part 3). With ZONE_VOTE_NEW_TRACK_SWIMMER on, the lane-clip deck person (poor pose) started SWIMMER and the guard kept him there: 7 alerts. His smoothed D-FINE vote: median 0.037, < 0.15 in 91 % of frames; the swimmer in swimming.mp4 never went below 0.185."
+    },
+    {
+      "version": "2.16.0",
+      "date": "2026-10-30",
+      "change": "Two new keys, behaviour unchanged by default: BOX_ONLY_ACTIVE_LOW_REQUIRED false and WADING_STILL_CAP 1.0 (off). When pose is unreliable (box/track cues only): (1) BOX_ONLY_ACTIVE_LOW_REQUIRED true makes the 'head low at the waterline' cue (box shrinking against the person's own height) a core cue of Active Drowning, so a person who stops and stands up in shallow water (stationary + tall jittering box + change-from-normal = 1.0 + 0.5 + 0.6 + 1.0 = 3.1 agreeing cues >= ACTIVE_MIN_AGREEMENT 2.5) no longer alerts; the cue is required only when the box-height ratio is known; (2) WADING_STILL_CAP < 1 caps the still-only Passive evidence of a tall (box_aspect >= ACTIVITY_STANDING_ASPECT), steady (box_height_ratio >= 0.9), confidently detected box that is not frozen (still_ultra_frac < 0.8) at that value. A frozen body still escalates after PASSIVE_STILL_ONLY_FACTOR x passive_seconds; pose-reliable scoring is unchanged.",
+      "evidence": "Owner upload 2026-10-22-18-46-32 (docs/evidence/wading/): 4 of v0's 11 alerts were people standing or wading (ACTIVE_DROWNING 'pose unreliable - box/track cues', 3.1 cues agreeing). A/B on eval/heldout_v1 dev + the upload clip is pre-registered in docs/evidence/wading/rule.md before the run; the switches stay off unless it passes."
+    },
+    {
+      "version": "2.17.0",
+      "date": "2026-10-30",
+      "change": "Switch on the wading rule: BOX_ONLY_ACTIVE_LOW_REQUIRED true, WADING_STILL_CAP 0.3 (keys added in 2.16.0).",
+      "evidence": "docs/evidence/wading/ab.md (dev split, High, TensorRT, default detector and v0: no labelled event lost or later than 2 s, false alerts 49 -> 49 and 202 -> 198) and docs/evidence/wading/replay.md (the owner's upload: ACTIVE_DROWNING alerts on standing people 2 -> 0 with v0 and v0.1). Pre-registered in docs/evidence/wading/rule.md."
+    },
+    {
+      "version": "2.18.0",
+      "date": "2026-11-12",
+      "change": "Sprint day 1. End-of-clip flush for finite clips (uploads, eval harness): CLIP_END_FLUSH true scores the visible tracks once more at the last frame, treats swimmers gone for more than CLIP_END_GONE_SECONDS 0.5 as lost (same ghost filters as expiry), and raises SUBMERSION for a ghost lost at least CLIP_END_GHOST_MIN_SECONDS 3.0 before the clip ended. Before this, a victim who went under in the last ~8 s of a clip could never alert. Live streams never call it. Finite clips run on one time base (vision/clip_clock.py): container timestamps (CAP_PROP_POS_MSEC, idx/fps fallback) instead of idx/fps, so phone VFR clips no longer drift against the player. New CLIP_ANALYSIS_FPS 0.0 (every frame, as before): an 18 fps analysis rate (the live rate) was tried and REJECTED - on eval/heldout_v1 dev with RTMDet it lost 3 events (active_drowning_v9, floatable_drowning, passive_drowning_v2; ablation: neither the non-person filter nor the zone rules) for 1 gained (active_drowning_v6). In-water decision with no geometry (uploads): ZONE_VOTE_NEW_TRACK_SWIMMER false -> true, ZONE_VOTE_DECK_HOLD_SECONDS 0 -> 1.0, new ZONE_VOTE_DECK_NEEDS_LAND true (the vote alone never puts a swimmer on the deck: land evidence from legs or feet must agree) and new ZONE_DEMOTE_MAX_RISK 0.26 (a swimmer whose alert is active or whose risk is at least CAUTION is not demoted by the vote or the colour estimate; > 1 = old behaviour). Land evidence also counts a clearly dry vote (< ZONE_VOTE_DECK_TALL_VOTE 0.3) on a tall, narrow box (height >= ZONE_VOTE_DECK_TALL_ASPECT 2.0 x width): without it a coach standing on the far deck (87 px, legs unprovable by pose) stayed in the water and raised PASSIVE alerts (D-FINE dev false alerts 44 -> 70; ablation: all 26 from the zone rules). Zoned cameras unchanged. New non-person filter (vision/tracking/non_person.py), NONPERSON_FILTER true: a lens OCCLUDER (box on the frame border >= 0.8 of 2 s, >= 0.3 of the frame tall, 90th-percentile |Laplacian| <= 2.0 x the frame median: out of focus) and a FIXTURE (8 s from first sighting with p90 confident keypoints <= 3, median crop activity <= 8.0 and median motion against the background <= 0.06 box heights; latched a person for good on >= 8 keypoints or activity >= 12) are not reported, and the scene forgets them (no SUBMERSION ghost). Thresholds from the per-track study of 34 clips x 2 detectors: on D-FINE the occluder rule hides only the owner's finger (IMG_5495) and the fixture rule 22 tracks, all checked by eye as lane-rope anchors or kit bags; kept: a face at the waterline, a blurry child at the lens, still people on fixed cameras, every swimmer. With RTMDet (the live detector) on uploads two more: a box at least NONPERSON_MAX_WIDTH_FRAC 0.6 of the frame wide or NONPERSON_MAX_AREA_FRAC 0.3 of its area is hidden at once (a 3757-px 'person' along the near wall of IMG_5495), and a tall sliver on the frame edge (>= NONPERSON_SLIVER_MIN_HEIGHT 0.25 of the frame, height/width >= NONPERSON_SLIVER_ASPECT 4.0, for 1 s) is an occluder (the finger sliding in: it raised ACTIVE_DROWNING at 6.5 s before the focus rule could see it). New DET_NESTED_IOA_UPLOAD 0.8, uploads and the eval harness only (live unchanged): a box lying >= 0.8 inside a higher-scoring box is dropped before tracking (RTMDet split a splashing victim into 7 overlapping ids). New TRACK_BIRTH_GUARD_IOU_UPLOAD 0.3, uploads only: an unmatched high-score box overlapping (IoU >= 0.3 with its last box) a confirmed track that found no box this frame continues that track instead of starting a new one - ByteTrack's IoU x score fusion failed a splashing victim scored ~0.4, and the new track then alternated with the old one frame by frame (IMG_5491 #2 / #4).",
+      "evidence": "Sprint (owner-approved plan 2026-11-12): one rule for the sprint - dev recall must not fall and dev false alerts must not rise; test run once at the end. Evidence to docs/evidence/sprint/."
+    },
+    {
+      "version": "2.19.0",
+      "date": "2026-11-12",
+      "change": "Upload tracking profile narrowed after a held-out regression: DET_NESTED_IOA_UPLOAD 0.8 -> 0.0 (it only ever acted on RTMDet, D-FINE has its own nested filter) and the birth guard applies only to DETR detectors; with RTMDet the two together lost ds_floatable_drowning and ds_active_drowning_v8 e2 on eval/heldout_v1 dev (ablation: off = both detected). D-FINE-M uploads keep the guard: 11/11 held-out dev events with 2.19.0. New BODY_GATE_MIN_POSE_SAMPLES, OFF (0): with 5, a track that never showed a body (fewer than 5 reliable pose samples, 0.5 s) cannot raise SUBMERSION when it vanishes or FLOATABLE_FAILURE (crowd fragments, reflections; RTSP test: 101 of 134 false alerts on normal crowd footage were these two). PASSIVE and ACTIVE are not gated. Measured with 5: sprint dev RTMDet false alerts 141 -> 132 and drowning clips 5 -> 6, but eval/heldout_v1 dev RTMDet events 7/11 -> 5/11 (lost floatable_drowning, active_drowning_v8 e2, passive_drowning_v2: small, pose-less victims) - a missed event outweighs false alerts, so it stays off. New non-person REFLECTION rule (NONPERSON_GLARE_FRAC 0.12 over NONPERSON_GLARE_SECONDS 1.5, never on a track that showed a body): boxes on light sparkling on the water are hidden (owner RTSP test: Submersion alerts on tall boxes over ceiling-light reflections). Owner manual test 2026-11-12 (live Test Feed over MediaMTX). New ALERT_ONGOING_SECONDS 2.0: while an alert is active it fires again every 2 s as an ONGOING update (live: marked on the person's unacknowledged alert and pushed to the UI, no new row, no outbox message; a notification still goes out on the rising edge and every LIVE_ALERT_COOLDOWN_SECONDS; uploads and the eval harness ignore ONGOING updates, so alert counts are comparable). Every alert now carries the time its evidence began (onset). 0 = the old 30 s re-fire only.",
+      "evidence": "docs/evidence/sprint/day2.md"
+    },
+    {
+      "version": "2.20.0",
+      "date": "2026-11-13",
+      "change": "New per-track temporal risk gate (vision/scene/temporal_gate.py), OFF (TEMPORAL_GATE false; TEMPORAL_GATE_WINDOW_S 4.0, TEMPORAL_GATE_MIN_AGE_S / _MIN_VISIBLE_FRAC / _MIN_POSITIVE_FRAC / _GHOST_MIN_AGE_S / _GHOST_MIN_VISIBLE_FRAC all 0 = no check): at a rising edge the track's own history (age, share of frames seen, share of positive scoring rounds, displacement) must qualify; live tracks are deferred, ghosts judged on their history at loss. Measured with features recorded on every alert (eval/heldout_v1 dev and eval/sprint_v1 dev, D-FINE-M and RTMDet-m): no setting keeps every event and removes more than 8 of 619 false alerts - false alerts are long-lived, steadily seen people, while real victims include tracks seen for under 2 s or on 3-6 % of frames. NONPERSON_GLARE_FRAC 0 now means off (value unchanged, 0.12). Behaviour unchanged.",
+      "evidence": "docs/evidence/sprint/day3.md"
+    },
+    {
+      "version": "2.21.0",
+      "date": "2026-11-13",
+      "change": "Life Guard rebuild, Phase 1 (RTSP only): the upload feature is removed, so the three keys that applied to uploaded clips are renamed for the finite clips that remain (the eval harness and the training dataset builder): DET_NESTED_IOA_UPLOAD -> DET_NESTED_IOA_CLIP, TRACK_BIRTH_GUARD_IOU_UPLOAD -> TRACK_BIRTH_GUARD_IOU_CLIP, UPLOAD_RENDER_MAX_FPS -> CLIP_RENDER_MAX_FPS. Values unchanged; live cameras unchanged. Rename only: no evaluation needed.",
+      "evidence": "docs/LIFEGUARD_REBUILD_PLAN.md"
+    },
+    {
+      "version": "2.22.0",
+      "date": "2026-11-14",
+      "change": "New key, behaviour unchanged (Phase 3 tracker rewrite Step 1): DET_DETR_TRACK_FLOOR 0.0 (off). When set between 0 and DET_DETR_MIN_SCORE, DETR (D-FINE) boxes scoring from the floor up to DET_DETR_MIN_SCORE are kept for ByteTrack too, so its 2nd association (TRACK_LOW_SCORE_THRESHOLD..TRACK_HIGH_SCORE_THRESHOLD) and the low-score re-find of lost tracks receive boxes again - before this every DETR box under 0.3 was dropped in decode, so a dimming underwater victim lost the track and was reborn under a new id. Such a box can only extend or re-find a track: births still need TRACK_HIGH_SCORE_THRESHOLD + TRACK_BIRTH_SCORE_MARGIN (0.35) and an untracked box is only shown from TENTATIVE_DISPLAY_MIN_SCORE (0.3). RTMDet unaffected.",
+      "evidence": "docs/evidence/phase3/tracker_rewrite/RULE.md (A/B pending)"
+    },
+    {
+      "version": "2.23.0",
+      "date": "2026-11-14",
+      "change": "New keys, behaviour unchanged (Phase 3 tracker rewrite Step 2): TRACK_ASSOC_COST \"iou_fused\" (ByteTrack's 1st association cost, IoU x detection score - as before) and TRACK_ASSOC_DIST_RADIUS 1.0. \"iou_dist\" uses plain IoU (a weak, dimming box is not penalised for its score: IoU 0.4 x score 0.45 = 0.18 failed the 0.2 match) with a centre-distance fallback for boxes whose IoU collapsed: similarity max(IoU, 0.5 x (1 - d / (radius x mean box height))) within a 2x height ratio; capped at 0.5 so a distance-only pair never beats a real overlap.",
+      "evidence": "docs/evidence/phase3/tracker_rewrite/RULE.md (A/B pending)"
+    },
+    {
+      "version": "2.24.0",
+      "date": "2026-11-14",
+      "change": "New key, behaviour unchanged (Phase 3 tracker rewrite Step 3): TRACK_LOST_SECONDS_WATER 4.0 (= TRACK_LOST_SECONDS: off). When larger, a ByteTrack track whose last matched box was in the water (the scene's water test: zones, else the colour estimate) is kept that long while lost instead of TRACK_LOST_SECONDS, its Kalman velocity damped (x0.9 per 1/30 s) so the prediction stops near where the swimmer went under, and the low-score re-find may revive it for that long (not TRACK_REFIND_MAX_SECONDS). Deck tracks unchanged. SUBMERSION is not delayed: the scene still hands a track unseen for TRACK_STALE_SECONDS to the SubmersionMonitor from its last-seen time; a re-found id resumes its dormant scene track and resolves the ghost as before.",
+      "evidence": "docs/evidence/phase3/tracker_rewrite/RULE.md (A/B pending)"
+    },
+    {
+      "version": "2.25.0",
+      "date": "2026-11-15",
+      "change": "New keys, behaviour unchanged (Phase 4 label levers, scene/alert_label.py): FLOATABLE_NEEDS_FLOAT false and ALERT_CLASS_VOTE_S 0.0 (off). They change only the scenario an alert reports, never when or on whom it fires. FLOATABLE_NEEDS_FLOAT: a FLOATABLE_FAILURE alert on an upright person (uprightness >= 58 deg, pose reliable) with no float ever near the track reports ACTIVE_DROWNING. ALERT_CLASS_VOTE_S > 0: an alert reports the drowning class with the most positive time over the track's last N s (rounds weighted by the gap since the previous round, capped 0.5 s; ties to the more severe). A SUBMERSION alert is never relabelled.",
+      "evidence": "docs/evidence/phase4/RULE.md amendment 1, docs/evidence/phase4/diag/DIAG.md (A/B pending)"
+    },
+    {
+      "version": "2.26.0",
+      "date": "2026-11-15",
+      "change": "Switch on FLOATABLE_NEEDS_FLOAT (label only): a FLOATABLE_FAILURE alert on an upright person with no float ever near the track reports ACTIVE_DROWNING. Alert timing, tracks and counts unchanged.",
+      "evidence": "docs/evidence/phase4/floatable_needs_float (RULE.md amendment 1: PASS on RTMDet and pool_v0; active_drowning own-class recall 0->2/6 and 0->3/6)"
+    },
+    {
+      "version": "2.27.0",
+      "date": "2026-11-15",
+      "change": "New key, behaviour unchanged (Phase 4 Step 2): RAISE_MIN_POSITIVE_S 0.0 (off). When > 0, a PASSIVE_DROWNING or FLOATABLE_FAILURE alert also needs the track's positive rounds to have run unbroken for that many seconds before it rises (AlertHysteresis, in addition to positive_windows). ACTIVE keeps active_sustain_seconds; SUBMERSION and the vanished-swimmer ghosts are never delayed; no size or pose gate.",
+      "evidence": "docs/evidence/phase4/RULE.md criteria 1-5 (A/B pending)"
+    },
+    {
+      "version": "2.28.0",
+      "date": "2026-11-15",
+      "change": "New key, behaviour unchanged (Phase 4 Step 3): PASSIVE_NEVER_TRAVELLED_SU 0.0 (off). When > 0, a track that has scoring rounds BEFORE its current still stretch but never travelled faster than this (KinematicFeatures.moving, su/s) in them reaches PASSIVE stillness evidence at PASSIVE_STILL_ONLY_FACTOR x passive_seconds instead of passive_seconds (delayed, never muted). Tracks still since they appeared, face-down / inverted evidence, SUBMERSION and the ghosts are unchanged; no size or pose gate.",
+      "evidence": "docs/evidence/phase4/passive_diag/DIAG.md (A/B pending)"
+    },
+    {
+      "version": "2.29.0",
+      "date": "2026-11-15",
+      "change": "New key, behaviour unchanged (Phase 4 Step 4): ALERT_RERAISE_DAMP_S 0.0 (off). When > 0, an alert that rises within this many seconds of the same track's previous alert clearing, with a class of the same or lower SCENARIO_SEVERITY, is raised (UI, alarm) as a continuation of that alert: not notified anew (first=False), and its notifications follow LIVE_ALERT_COOLDOWN_SECONDS from the last one. A worse class always notifies; SUBMERSION and the ghosts are never damped.",
+      "evidence": "docs/evidence/phase4/RULE.md criteria 1-5 (A/B pending)"
+    },
+    {
+      "version": "2.30.0",
+      "date": "2026-11-16",
+      "change": "New keys, behaviour unchanged (proposal 004): CHILD_RATIO_LO 0.4 / CHILD_RATIO_HI 0.56 (were hard-coded in behaviour/features.py: child likelihood = ramp(median ear-to-ear / shoulder-width ratio, LO, HI)) and CHILD_RATIO_MIN_SHOULDER_PX 0.0 (off). When > 0, a pose whose shoulder width is below it gives no child ratio. Child likelihood weights Floatable Failure's sudden-displacement and posture-flip evidence (0.30 + 0.70 x likelihood) and gates floatable detachment.",
+      "evidence": "logs/p004_child_probe.log: RTMPose on 4 Red Rescue clips (adults only), 2156 poses: ratio p50 0.61, 58 % >= 0.56; shoulder width >= 60 px still p50 0.50 (86 % >= 0.40). 31/33 live Floatable Failure false alerts carried child likelihood 1.00 (logs/p004_fa_zoned.json). A/B pending."
+    },
+    {
+      "version": "2.31.0",
+      "date": "2026-11-16",
+      "change": "New keys, behaviour unchanged (proposal 005): ALERT_OCCLUDER_GATE false, ALERT_OCCLUDER_MIN_HEIGHT 0.25, ALERT_OCCLUDER_BLUR_SHARE 0.45, ALERT_OCCLUDER_SLIVER_ASPECT 4.0. When on, a track whose box on the current frame touches the frame border, is >= MIN_HEIGHT of the frame tall and is a sliver (height >= SLIVER_ASPECT x width) or mostly out of focus (share of box pixels with |Laplacian| below the frame median >= BLUR_SHARE) raises and re-raises no alert that round; its notification state is untouched. Submersion ghosts are never gated.",
+      "evidence": "4-camera live runs on the iPhone dev clips (logs/p005_ab4, logs/p005_ab4g): finger-over-lens alerts blur share 0.47-0.69 or slivers; real swimmer boxes <= 0.42 (at the border 0.30). A/B pending."
+    },
+    {
+      "version": "2.32.0",
+      "date": "2026-11-16",
+      "change": "ALERT_OCCLUDER_GATE false -> true (proposal 005): a lens occluder (finger) at the frame border raises no alert.",
+      "evidence": "docs/evidence/phase6/occluder_gate/RESULT.md: live 4-camera finger-only alerts 3-4 -> 0 per 5 min, real swimmers at the border still alert; dev (High, tensorrt) 6/11 events in window (unchanged), notified FA 92 -> 91."
+    },
+    {
+      "version": "2.33.0",
+      "date": "2026-11-16",
+      "change": "New keys, behaviour unchanged (Stage 2, false person detections): NONPERSON_DECK_STATIC_SECONDS 0.0 (off) and NONPERSON_DECK_STATIC_MAX_MOVE 0.07 - on a camera with a drawn WATER / SHALLOW zone, a confirmed track whose box stays entirely outside the drawn water for that many seconds while the 90th percentile of its background-relative movement is at most MAX_MOVE box heights per 0.5 s sample is not reported (deck fixtures: filter tank, bag on a rack); TENTATIVE_HIDE_OUTSIDE_WATER false - on such a camera an untracked (tentative) box entirely outside the drawn water is not shown. Without a drawn zone neither rule runs.",
+      "evidence": "docs/evidence/stage2/README.md"
+    },
+    {
+      "version": "2.34.0",
+      "date": "2026-11-17",
+      "change": "NONPERSON_DECK_STATIC_SECONDS 0 -> 5.0 and TENTATIVE_HIDE_OUTSIDE_WATER false -> true (Stage 2): on a camera with a drawn water zone, deck fixtures and untracked boxes entirely outside the drawn water are not shown. No drawn zone: no change.",
+      "evidence": "docs/evidence/stage2/README.md: with drawn zones, IMG_5511 filter tank 967 -> 198 frames, tentatives 142 -> 80; clip 1 bag on rack 114 -> 90 frames; real tracks and alerts unchanged on IMG_5511, clip 1, IMG_5490, IMG_5502; replays without a zone bit-identical. Dev eval (High, tensorrt): see README."
+    },
+    {
+      "version": "2.35.0",
+      "date": "2026-11-17",
+      "change": "New keys, behaviour unchanged (Stage 3b ID anchoring, all off): TRACK_SECOND_MATCH_LAST_SEEN false (on: ByteTrack's 2nd association also matches a confirmed track's LAST OBSERVED box, not only its Kalman prediction, at the same TRACK_SECOND_MATCH_IOU; a weak box that fits two tracks this way goes to neither; weak boxes still never start a track). ID_LINK_NESTED false (on: in the water too, two confirmed tracks on one body (on a splashing body the two ids mostly alternate, so the pair is sampled on the frames where both are reported while both ids are alive) with at least ID_LINK_NESTED_MIN_SAMPLES 5 joint frames in a full ID_LINK_NESTED_SECONDS 2.0 s window, nested by ID_LINK_NESTED_IOA 0.8 in >= ID_LINK_NESTED_FRAC 0.8 of them and now, never clearly apart (< STITCH_BLOCK_IOA), moving together (centre offset change <= ID_LINK_MOTION_MAX 1.0 smaller-box sizes per second), the inner box not inside two boxes that are apart, RTMPose sees ONE skeleton on both (>= 4 shared confident joints, median distance <= ID_LINK_SKELETON_SEP 0.35 of the smaller box height; ID_LINK_REQUIRE_SKELETON true: no pose evidence = ambiguous = no link) and not clearly different in colour (cap / torso hue-saturation histogram Bhattacharyya distance > ID_LINK_COLOUR_MAX 0.6) become one person: the outer box is reported under the older public id, the inner one is an alias (a merged shadow) that gets its own id back as soon as the boxes stop overlapping by SHADOW_IOA; each link is logged with its evidence). ID_LINK_STITCH_UNIQUE false (on: a stitch needs exactly one lost id within reach and size; two candidates = new id). TRACK_COAST_SECONDS 0.0 (> 0: a public id unseen for at most this long is listed as coasting, last observed box, drawn dashed; display only, never a track, never scored)."
+    },
+    {
+      "version": "2.36.0",
+      "date": "2026-11-17",
+      "change": "TRACK_COAST_SECONDS 0.0 -> 2.0 (Stage 3b): a public id unseen for at most 2 s is listed as coasting (its last observed box) and drawn dashed on the live view; display only - never a track, never scored, never alert evidence. TRACK_SECOND_MATCH_LAST_SEEN, ID_LINK_NESTED and ID_LINK_STITCH_UNIQUE stay off (rejected, see evidence).",
+      "evidence": "docs/evidence/stage3/README.md section 5: replays of IMG_5490, IMG_5502, IMG_5511 and clip 1 bit-identical in boxes and alerts with coasting on; clip 1 labels 46 of 237 no-box person-frames now coasting; IMG_5502 victim 73 of 97 no-box frames coasting. Rejected: last-seen claim (clip 1 alerts 56 -> 57), unique stitch (victims fragment), nested link (2 label-flagged merges; attempt 4 clip 1 alerts 59)."
+    },
+    {
+      "version": "2.37.0",
+      "date": "2026-11-17",
+      "change": "Stage 4: one alert, \"Drowning Alert\", with one short reason (vision/scene/alert_reason.py). The behaviour rules and the submersion monitor detect exactly as before (when, how long and on whom an alert fires is unchanged); only what an alert reports is collapsed: SUBMERSION \"Submersion / sudden blackout\" (a submersion ghost or the SUBMERSION rule), ACTIVE \"Active drowning\" (every other detection with confidence >= ALERT_ACTIVE_MIN_CONFIDENCE 0.6), DROWNING \"Drowning\" (the same, lower confidence: generic, never dropped). New ALERT_FLOATABLE_REASON false: \"Floatable failure\" only with a float seen near the person (there is no float detector; off). Removed with the per-class label layer: ALERT_CLASS_VOTE_S (was 0.0, off) and FLOATABLE_NEEDS_FLOAT (was true: relabelled a no-float FLOATABLE_FAILURE as ACTIVE_DROWNING; both now report the same reason). Alert rows keep their scenario column: new rows store the reason code, old type names are mapped on read.",
+      "evidence": "docs/evidence/stage4/README.md"
+    },
+    {
+      "version": "2.38.0",
+      "date": "2026-11-17",
+      "change": "New ALERT_EVENT_CATEGORY_LOCK false (behaviour unchanged): with it on, an event's category is fixed by its first alert until the event closes (alerts/events.attach); a later alert of the same event (a submersion ghost after an active struggle, a 30 s re-notification whose confidence crossed ALERT_ACTIVE_MIN_CONFIDENCE) reports the event's category and keeps what it observed in its reason text. Off = Stage 4 behaviour (the event shows its latest alert's reason). Detection, timing and which alerts fire are not touched.",
+      "evidence": "docs/evidence/submerged/README.md"
+    },
+    {
+      "version": "2.39.0",
+      "date": "2026-11-17",
+      "change": "ALERT_EVENT_CATEGORY_LOCK false -> true (owner, 2026-11-17: lock-first): an event keeps its first alert's category until it closes; the live cam4 incident (alerts 103 ACTIVE -> 104 SUBMERSION ghost, one event) now stays Active drowning, the ghost's observation kept in its reason. Display and notification text only: replays of IMG_5506, IMG_5495, IMG_5511 and clip 1 fire the same alerts at the same times (the key is read only by alerts/events.py); simulated events whose category changed: clip 1 1/33 -> 0, the other clips 0.",
+      "evidence": "docs/evidence/submerged/README.md"
+    },
+    {
+      "version": "2.40.0",
+      "date": "2026-11-17",
+      "change": "New keys only, behaviour unchanged: SUBMERGED_FOLLOW false (vision/tracking/submerged.py) - a swimmer the detector lost under water (RTMDet outputs no box on a submerged body) is followed on the image (CPU, no detector call): a slow background of the scene (SUBMERGED_FOLLOW_BG_ALPHA 0.03 per frame, frozen in shown and followed boxes) is re-registered to every frame (ORB + RANSAC, so a swaying camera is not change) and the body is what is darker than that background AND than the window's 20th-percentile water by SUBMERGED_FOLLOW_DARK_DELTA 15.0 grey levels; the stitcher's lost record moves with the follower so the swimmer keeps their id when they resurface; the followed box is shown dashed with the coasting boxes (display and identity only: never scored, the submersion monitor is untouched). _MAX_SECONDS 60.0, _MIN_TRACK_SECONDS 1.0 (track age before it can be followed), _MISS_SECONDS 2.0 (no body that long ends the follow), _CONFIRM_SECONDS 1.0 (a follow moves the stitcher's record and is shown only after holding the body that long: short occlusions stitch as before), _ISOLATION 2.0 (not started with another confirmed person within 2 body sizes), _SEARCH 1.0 (window margin in box sizes). The background runs only while a swimmer is in the water or followed.",
+      "evidence": "docs/evidence/submerged/README.md"
+    },
+    {
+      "version": "2.41.0",
+      "date": "2026-11-17",
+      "change": "SUBMERGED_FOLLOW false -> true. IMG_5506 (submersion, 15 fps, Medium, no zone): the victim, whom RTMDet stops boxing at 19.2 s, is followed on the body on 19/21 labelled submerged frames at IoU >= 0.3 (4/21 at IoU >= 0.5; the owner's labels are drawn looser than the body), 0/21 before; still one id. Display and identity only: replays of IMG_5506, IMG_5495, IMG_5511 and clip 1 raise the same alerts at the same times (events identical; clip 1 labelled-person id metrics identical: 15 switches, 19 ids); eval/heldout_v1 dev (High, tensorrt) unchanged: 6/11 in window, 91 notified false alerts; tools/rtsp_validate.py ip_5506 + ip_5495 identical alerts, analysed 1.0, lag <= 0.3 s. CPU +3.7 to +8.4 ms per analysed frame while a swimmer is in the water (replay wall time).",
+      "evidence": "docs/evidence/submerged/README.md"
+    },
+    {
+      "version": "2.42.0",
+      "date": "2026-11-17",
+      "change": "SUBMERGED_FOLLOW true -> false (owner, 2026-11-17: live lag). The follower's background re-registration (ORB + RANSAC every frame while a zone says someone is in the water, also on standard_cctv cameras) costs 6-8 ms per analysed frame on an idle box and 18-25 ms under CPU contention, which takes 4 cameras at 15 fps to 65-67 ms per frame against a 66.7 ms budget. Under the lag-diagnosis stress setup (API on E-cores with 4 test encoders + a concurrent dev eval), 2.41.0 raised CAMERA_LAGGING in 3/3 runs and the follower switched off raised it in 0/2. Display and identity only, so no alert changes (2.41.0 entry: alerts and dev eval identical on and off); IMG_5506 submerged victim follow 19/21 -> 0/21 (as 2.40.0). The follower code and its keys stay.",
+      "evidence": "docs/evidence/lag_diag/README.md"
+    },
+    {
+      "version": "2.43.0",
+      "date": "2026-11-18",
+      "change": "New keys, behaviour unchanged (zone gate): ZONE_GATE false. When on and the camera has a drawn WATER / SHALLOW polygon, a detector box is kept only if the bottom ZONE_GATE_FOOT_BAND 0.1 of the box, grown by a margin of max(ZONE_GATE_MARGIN_BOX 0.1 x box height, ZONE_GATE_MARGIN_FRAME 0.01 x frame height), touches the drawn water; anything else (deck, outside the pool) is dropped before tracking, so it gets no box, track, pose, score or alert. A box that overlaps (IoU >= 0.3) the last box of a public track seen inside the gate within ZONE_GATE_GRACE_SECONDS 2.0 is kept (a swimmer climbing out). ZONE_GATE_AFTER_TRACK false: with it true the tracker still sees every box (ids exactly as without the gate) and the gate removes deck boxes after tracking, before pose, scoring and display; grace then keeps a public id that was inside within the grace period. No drawn zone, or a zone that rasterises to (nearly) nothing: whole frame, as before (warning logged).",
+      "evidence": "docs/evidence/zone_gate/README.md"
+    }
+  ],
+  "values": {
+    "features": {
+      "CLIP_ANALYSIS_FPS": 0.0,
+      "CUDNN_CONV_ALGO_SEARCH": "HEURISTIC",
+      "DET_DETR_MIN_SCORE": 0.3,
+      "DET_DETR_NESTED_IOA": 0.8,
+      "DET_DETR_NMS_IOU": 0.5,
+      "DET_DETR_TRACK_FLOOR": 0.0,
+      "DET_ENHANCE": "",
+      "DET_INPUT_SIZE": 640,
+      "DET_MOSAIC": false,
+      "DET_MOSAIC_FAR_FRAC": 0.15,
+      "DET_MOSAIC_GAIN": 2.0,
+      "DET_MOSAIC_MAX_CALLS": 2,
+      "DET_MOSAIC_NEAR_FRAC": 0.6,
+      "DET_ROI_CROP": false,
+      "DET_TILING": "off",
+      "DET_TILING_REGION": "responsible",
+      "DET_ZOOM": false,
+      "GLARE_HOLD": false,
+      "GLOBAL_ALERT_DEDUP": false,
+      "ID_STITCHING": true,
+      "MULTIVIEW_CONFIRM": false,
+      "POOL_HANDOFF_GUARD": true,
+      "POOL_ID_REPAIR": true,
+      "POOL_RANK_BY_DISTANCE": false,
+      "POSE_ENABLED": true,
+      "RESPONSIBILITY_GATING": false,
+      "TRACK_FAINT_BIRTHS": false
+    },
+    "detection": {
+      "DET_LOW_SCORE_THRESHOLD": 0.1,
+      "DET_ZOOM_CONTEXT": 2.5,
+      "DET_ZOOM_LOST_SECONDS": 2.0,
+      "GLARE_AUTO_EVERY_S": 0.5,
+      "GLARE_AUTO_PERSIST": 0.6,
+      "GLARE_AUTO_S_MAX": 40,
+      "GLARE_AUTO_V_MIN": 245,
+      "GLARE_HOLD_MAX_S": 4.0,
+      "DET_ZOOM_MATCH_IOU": 0.45,
+      "DET_ZOOM_MAX_BOX_FRAC": 0.5,
+      "DET_ZOOM_MAX_CROP": 320,
+      "DET_ZOOM_MAX_REGIONS": 4,
+      "DET_ZOOM_MIN_CROP": 96,
+      "TENTATIVE_DISPLAY_MIN_SCORE": 0.3,
+      "TENTATIVE_HIDE_OUTSIDE_WATER": true,
+      "POSE_INPUT_RGB": true,
+      "POSE_MAX_PER_FRAME": 32,
+      "POSE_STRIDE": 2,
+      "POSE_STABLE_MIN_FRAMES": 15,
+      "POSE_SMALL_BOX_PX": 96.0,
+      "POSE_SKIP_MAX_RISK": 0.2
+    },
+    "tracking": {
+      "ALERT_OCCLUDER_BLUR_SHARE": 0.45,
+      "ALERT_OCCLUDER_GATE": true,
+      "ALERT_OCCLUDER_MIN_HEIGHT": 0.25,
+      "ALERT_OCCLUDER_SLIVER_ASPECT": 4.0,
+      "FAINT_BIRTH_MAX_SPLASH": 0.5,
+      "FAINT_BIRTH_MIN_BODY": 0.08,
+      "FAINT_BIRTH_MIN_HIT_FRAC": 0.6,
+      "FAINT_BIRTH_MIN_MEAN": 0.17,
+      "FAINT_BIRTH_MIN_MOTION": 0.1,
+      "FAINT_BIRTH_MIN_SCORE": 0.15,
+      "FAINT_BIRTH_WINDOW_SECONDS": 0.6,
+      "FRAME_RULES_REFERENCE_FPS": 15.0,
+      "FRAME_RULES_SCALE_TO_FPS": true,
+      "LIVENESS_CHECK": true,
+      "LIVENESS_LOG_STATS": false,
+      "LIVENESS_MAX_MOVE": 0.1,
+      "LIVENESS_MIN_ACTIVITY": 2.0,
+      "LIVENESS_SECONDS": 10.0,
+      "NONPERSON_ACTIVE_LATCH": 12.0,
+      "NONPERSON_BODY_JOINTS": 8,
+      "NONPERSON_DECK_STATIC_MAX_MOVE": 0.07,
+      "NONPERSON_DECK_STATIC_SECONDS": 5.0,
+      "NONPERSON_FILTER": true,
+      "NONPERSON_FIXTURE_MAX_ACTIVITY": 8.0,
+      "NONPERSON_FIXTURE_MAX_JOINTS": 3,
+      "NONPERSON_FIXTURE_MAX_MOVE": 0.06,
+      "NONPERSON_FIXTURE_SECONDS": 8.0,
+      "NONPERSON_GLARE_FRAC": 0.12,
+      "NONPERSON_GLARE_SECONDS": 1.5,
+      "NONPERSON_MAX_AREA_FRAC": 0.3,
+      "NONPERSON_MAX_WIDTH_FRAC": 0.6,
+      "NONPERSON_OCCLUDER_BORDER_FRAC": 0.8,
+      "NONPERSON_OCCLUDER_MAX_SHARPNESS": 2.0,
+      "NONPERSON_OCCLUDER_MIN_HEIGHT": 0.3,
+      "NONPERSON_OCCLUDER_SECONDS": 2.0,
+      "NONPERSON_SLIVER_ASPECT": 4.0,
+      "NONPERSON_SLIVER_MIN_HEIGHT": 0.25,
+      "DET_NESTED_IOA_CLIP": 0.0,
+      "TRACK_BIRTH_GUARD_IOU_CLIP": 0.3,
+      "SHADOW_IOA": 0.6,
+      "SHADOW_MAX_SECONDS": 1.5,
+      "SHADOW_MERGE": true,
+      "SHADOW_MERGE_SECONDS": 1.0,
+      "SHADOW_NESTED_IOA": 0.85,
+      "SMALL_PERSON_GATE": true,
+      "SMALL_PERSON_PX": 50.0,
+      "STITCH_BLOCK_IOA": 0.3,
+      "STITCH_MAX_GAP_SECONDS": 10.0,
+      "STITCH_RADIUS_BASE": 1.5,
+      "STITCH_RADIUS_MAX": 3.0,
+      "STITCH_RADIUS_PER_SECOND": 0.5,
+      "STITCH_RECENT_SECONDS": 1.0,
+      "STITCH_SIZE_RATIO_MAX": 2.5,
+      "STITCH_SIZE_RATIO_RECENT": 3.5,
+      "TRACK_BIRTH_SCORE_MARGIN": 0.1,
+      "TRACK_HIGH_SCORE_THRESHOLD": 0.25,
+      "TRACK_KF_STD_POSITION": 0.05,
+      "TRACK_KF_STD_VELOCITY": 0.00625,
+      "TRACK_LOST_SECONDS": 4.0,
+      "TRACK_LOW_SCORE_THRESHOLD": 0.1,
+      "TRACK_MATCH_IOU": 0.2,
+      "TRACK_REFIND_LOW_IOU": 0.3,
+      "TRACK_REFIND_MAX_SECONDS": 2.0,
+      "TRACK_SECOND_MATCH_IOU": 0.5,
+      "TRACK_STALE_SECONDS": 3.0,
+      "TRACK_UNCONFIRMED_MATCH_IOU": 0.3,
+      "TRACK_ASSOC_COST": "iou_fused",
+      "TRACK_ASSOC_DIST_RADIUS": 1.0,
+      "TRACK_LOST_SECONDS_WATER": 4.0,
+      "ID_LINK_COLOUR_MAX": 0.6,
+      "ID_LINK_MOTION_MAX": 1.0,
+      "ID_LINK_NESTED": false,
+      "ID_LINK_NESTED_FRAC": 0.8,
+      "ID_LINK_NESTED_IOA": 0.8,
+      "ID_LINK_NESTED_SECONDS": 2.0,
+      "ID_LINK_SKELETON_SEP": 0.35,
+      "ID_LINK_STITCH_UNIQUE": false,
+      "TRACK_COAST_SECONDS": 2.0,
+      "TRACK_SECOND_MATCH_LAST_SEEN": false,
+      "ID_LINK_NESTED_MIN_SAMPLES": 5,
+      "ID_LINK_REQUIRE_SKELETON": true
+    },
+    "motion": {
+      "BODY_DARK_DELTA": 20,
+      "MOTION_EVERY_N": 2,
+      "MOTION_HISTORY_SECONDS": 6.0,
+      "MOTION_VAR_THRESHOLD": 24.0,
+      "MOTION_WARMUP_SECONDS": 1.0,
+      "MOTION_WIDTH": 192,
+      "SPLASH_SAT_MAX": 45,
+      "SPLASH_VAL_MIN": 175
+    },
+    "water_estimate": {
+      "WATER_EST_ALPHA": 0.15,
+      "WATER_EST_INTERVAL_S": 2.0,
+      "WATER_EST_MAX_FRAC": 0.92,
+      "WATER_EST_MIN_FRAC": 0.05,
+      "WATER_EST_STABLE_UPDATES": 3,
+      "WATER_EST_WARMUP_INTERVAL_S": 0.5,
+      "WATER_EST_WARMUP_UPDATES": 8,
+      "WATER_EST_WIDTH": 160,
+      "WATER_HUE_BAND": 14,
+      "WATER_HUE_RANGE": [
+        78,
+        132
+      ],
+      "WATER_RETURN_SECONDS": 1.0,
+      "WATER_SAT_MIN": 35,
+      "WATER_SAT_REL": 0.5,
+      "WATER_VAL_MIN": 40
+    },
+    "zones": {
+      "CATEGORY_SWITCH_SAMPLES": 3,
+      "DECK_EDGE_WARNING_SU": 1.5,
+      "DEFAULT_ZONE_SENSITIVITY": 1.0,
+      "FALL_IN_LAST_FRAMES": 3,
+      "LAND_EVIDENCE_FRACTION": 0.7,
+      "LAND_EVIDENCE_SECONDS": 1.0,
+      "LAND_FROM_WATER_ESTIMATE": false,
+      "LAND_KP_CONF": 0.5,
+      "LAND_LEG_MIN_RATIO": 0.6,
+      "LAND_WATER_MARGIN": 0.1,
+      "ZONE_EDGE_BAND_BOX": 0.3,
+      "ZONE_EDGE_BAND_M": 0.6,
+      "ZONE_GATE": false,
+      "ZONE_GATE_AFTER_TRACK": false,
+      "ZONE_GATE_FOOT_BAND": 0.1,
+      "ZONE_GATE_GRACE_SECONDS": 2.0,
+      "ZONE_GATE_MARGIN_BOX": 0.1,
+      "ZONE_GATE_MARGIN_FRAME": 0.01,
+      "ZONE_SENSITIVITY_MAX": 3.0,
+      "ZONE_SENSITIVITY_MIN": 0.25,
+      "ZONE_DEMOTE_MAX_RISK": 0.26,
+      "ZONE_VOTE_DECK": 0.5,
+      "ZONE_VOTE_DECK_HOLD_SECONDS": 1.0,
+      "ZONE_VOTE_DECK_NEEDS_LAND": true,
+      "ZONE_VOTE_DECK_TALL_ASPECT": 2.0,
+      "ZONE_VOTE_DECK_TALL_VOTE": 0.3,
+      "ZONE_VOTE_DRY_CONFIDENT": 0.0,
+      "ZONE_VOTE_EMA_SECONDS": 0.5,
+      "ZONE_VOTE_NEW_TRACK_SWIMMER": true,
+      "ZONE_VOTE_STRONG": 0.85,
+      "ZONE_VOTE_WATER": 0.5
+    },
+    "multicamera": {
+      "GLOBAL_ALERT_DEDUP_SECONDS": 30.0,
+      "HANDOFF_GATE_BASE_M": 1.0,
+      "HANDOFF_GATE_MAX_M": 4.0,
+      "HANDOFF_GATE_PER_SECOND_M": 0.8,
+      "HANDOFF_GUARD_S": 1.0,
+      "HANDOFF_WINDOW_S": 6.0,
+      "MERGE_MIN_UPDATES": 5,
+      "MULTIVIEW_MIN_SCORE": 0.25,
+      "OVERLAP_GATE_M": 1.0,
+      "REPAIR_MIN_UPDATES": 5,
+      "REPAIR_SPLIT_M": 2.0,
+      "RESP_DENSITY_RATIO": 1.25,
+      "RESP_MIN_PX_PER_M": 25.0,
+      "VISIBLE_RECENT_S": 0.5
+    },
+    "submersion": {
+      "BLACKOUT_CRITICAL_RISK": 1.0,
+      "BLACKOUT_GRACE_SECONDS": 5.0,
+      "BLACKOUT_STRICT_INSIDE_SU": 0.9,
+      "CLIP_END_FLUSH": true,
+      "CLIP_END_GHOST_MIN_SECONDS": 3.0,
+      "CLIP_END_GONE_SECONDS": 0.5,
+      "FLOATABLE_VANISH_FACTOR": 0.6,
+      "FLOATABLE_VANISH_MIN_SECONDS": 2.0,
+      "GHOST_DUPLICATE_IOA": 0.6,
+      "GHOST_DUPLICATE_SYNC_SECONDS": 0.35,
+      "GHOST_EXTRAPOLATE_SECONDS": 2.0,
+      "GHOST_FAINT_MIN_MEDIAN_CONF": 0.12,
+      "GHOST_FAINT_MIN_PEAK_CONF": 0.18,
+      "GHOST_MIN_MEDIAN_CONF": 0.3,
+      "GHOST_MIN_PEAK_CONF": 0.45,
+      "GHOST_RESOLVE_SIZE_RATIO": 2.5,
+      "SUBMERSION_CONF_DROP": 0.35,
+      "SUBMERSION_EDGE_FACTOR": 1.5,
+      "SUBMERSION_GHOST_TTL_SECONDS": 120.0,
+      "SUBMERSION_MIN_TRACK_SECONDS": 1.5,
+      "SUBMERSION_OCCLUSION_FACTOR": 1.6,
+      "SUBMERSION_OCCLUSION_IOU": 0.25,
+      "SUBMERSION_TRAVEL_GRACE_SECONDS": 0.0
+    },
+    "learned_model": {
+      "BEHAVIOR_MODEL_DEFAULT_THRESHOLDS": {
+        "DISTRESS": 0.6,
+        "ACTIVE_DROWNING": 0.6,
+        "PASSIVE_DROWNING": 0.6
+      },
+      "BEHAVIOR_MODEL_MIN_SECONDS": 2.0,
+      "BEHAVIOR_MODEL_MODE_SCALE": {
+        "High": 0.85,
+        "Medium": 1.0,
+        "Low": 1.15
+      },
+      "BEHAVIOR_MODEL_RULE_NORMAL_BLOCKS": false,
+      "BEHAVIOR_MODEL_SEQ_SECONDS": 3.0,
+      "BEHAVIOR_MODEL_THRESHOLD_BOUNDS": [
+        0.2,
+        0.97
+      ]
+    },
+    "risk": {
+      "ACTIVE_DROWNING_RISK_MIN": 0.86,
+      "ALERT_MIN_RISK": 0.46,
+      "ALERT_ONGOING_SECONDS": 2.0,
+      "ALERT_RERAISE_DAMP_S": 0.0,
+      "DECK_PERSON_RISK": 0.0,
+      "LIVE_ALERT_COOLDOWN_SECONDS": 30,
+      "NON_DROWNING_RISK_CAP": 0.4,
+      "NON_DROWNING_RISK_EXPONENT": 2.0,
+      "NORMAL_SWIMMING_RISK_MAX": 0.2,
+      "PASSIVE_DROWNING_RISK_MIN": 0.91,
+      "RISK_RANGES": [
+        {
+          "min": 0,
+          "max": 25,
+          "status": "Normal",
+          "alert_level": "None"
+        },
+        {
+          "min": 26,
+          "max": 45,
+          "status": "Caution",
+          "alert_level": "Low"
+        },
+        {
+          "min": 46,
+          "max": 65,
+          "status": "Possible Drowning",
+          "alert_level": "Medium"
+        },
+        {
+          "min": 66,
+          "max": 82,
+          "status": "High Risk Drowning",
+          "alert_level": "High"
+        },
+        {
+          "min": 83,
+          "max": 100,
+          "status": "Critical Emergency",
+          "alert_level": "Critical"
+        }
+      ],
+      "SCENARIO_BASE_RISK": {
+        "DISTRESS": 0.5,
+        "ACTIVE_DROWNING": 0.64,
+        "PASSIVE_DROWNING": 0.72,
+        "FLOATABLE_FAILURE": 0.68,
+        "SUBMERSION": 0.76
+      },
+      "SCENARIO_RISK_MAX": {
+        "DISTRESS": 0.65
+      },
+      "SCENARIO_SEVERITY": {
+        "SUBMERSION": 1.0,
+        "PASSIVE_DROWNING": 0.97,
+        "FLOATABLE_FAILURE": 0.95,
+        "ACTIVE_DROWNING": 0.94,
+        "DISTRESS": 0.8
+      },
+      "STEP_PRE_LIMIT": 0.35,
+      "THRESHOLD_CEILING": 0.95,
+      "THRESHOLD_FLOOR": 0.08
+    },
+    "behaviour": {
+      "ACTIVE_MIN_AGREEMENT": 2.5,
+      "ACTIVITY_CALM_ARM_AMP_MAX": 0.1,
+      "ACTIVITY_CALM_BOB_MAX": 0.05,
+      "ACTIVITY_HEAD_UP_FACE_CONF": 0.45,
+      "ACTIVITY_HEAD_UP_SHOULDER_REL": 0.6,
+      "ACTIVITY_STANDING_ASPECT": 1.4,
+      "ACTIVITY_STANDING_CONF": 0.5,
+      "ACTIVITY_SWIM_SPEED": [
+        0.35,
+        0.8
+      ],
+      "BEHAVIOR_BUFFER_FRAMES": 60,
+      "BEHAVIOR_MODE_PARAMS": {
+        "High": {
+          "thresholds": {
+            "ACTIVE_DROWNING": 0.42,
+            "PASSIVE_DROWNING": 0.45,
+            "FLOATABLE_FAILURE": 0.42,
+            "SUBMERSION": 0.45
+          },
+          "passive_seconds": 6.0,
+          "submersion_seconds": 4.0,
+          "face_down_seconds": 3.5,
+          "min_window_seconds": 2.0,
+          "positive_windows": 2,
+          "negative_windows": 4,
+          "normal_gate": 0.7,
+          "active_sustain_seconds": 2.0
+        },
+        "Medium": {
+          "thresholds": {
+            "ACTIVE_DROWNING": 0.52,
+            "PASSIVE_DROWNING": 0.55,
+            "FLOATABLE_FAILURE": 0.52,
+            "SUBMERSION": 0.55
+          },
+          "passive_seconds": 8.0,
+          "submersion_seconds": 5.0,
+          "face_down_seconds": 5.0,
+          "min_window_seconds": 2.5,
+          "positive_windows": 3,
+          "negative_windows": 4,
+          "normal_gate": 0.62,
+          "active_sustain_seconds": 3.0
+        },
+        "Low": {
+          "thresholds": {
+            "ACTIVE_DROWNING": 0.64,
+            "PASSIVE_DROWNING": 0.66,
+            "FLOATABLE_FAILURE": 0.64,
+            "SUBMERSION": 0.66
+          },
+          "passive_seconds": 10.0,
+          "submersion_seconds": 7.0,
+          "face_down_seconds": 7.0,
+          "min_window_seconds": 3.0,
+          "positive_windows": 4,
+          "negative_windows": 3,
+          "normal_gate": 0.55,
+          "active_sustain_seconds": 4.0
+        }
+      },
+      "BEHAVIOR_SAMPLE_HZ": 10.0,
+      "BODY_GATE_MIN_POSE_SAMPLES": 0,
+      "CHILD_RATIO_HI": 0.56,
+      "CHILD_RATIO_LO": 0.4,
+      "CHILD_RATIO_MIN_SHOULDER_PX": 0.0,
+      "TEMPORAL_GATE": false,
+      "TEMPORAL_GATE_GHOST_MIN_AGE_S": 0.0,
+      "TEMPORAL_GATE_GHOST_MIN_VISIBLE_FRAC": 0.0,
+      "TEMPORAL_GATE_MIN_AGE_S": 0.0,
+      "TEMPORAL_GATE_MIN_POSITIVE_FRAC": 0.0,
+      "TEMPORAL_GATE_MIN_VISIBLE_FRAC": 0.0,
+      "TEMPORAL_GATE_WINDOW_S": 4.0,
+      "BEHAVIOR_SCORE_INTERVAL_S": 0.5,
+      "BOX_CUE_WEIGHT_DISTRESS": 0.6,
+      "BOX_CUE_WEIGHT_LOW": 0.6,
+      "BOX_CUE_WEIGHT_VERTICAL": 0.5,
+      "BOX_ONLY_ACTIVE_LOW_REQUIRED": true,
+      "BOX_SHRINK_RATIO": 0.7,
+      "CHANGE_FROM_NORMAL_SECONDS": 20.0,
+      "FLOATABLE_ASSOCIATION_IOU": 0.05,
+      "FLOATABLE_DETACH_BODY_WIDTHS": 2.5,
+      "FLOATABLE_DETACH_POSTURE_SECONDS": 4.0,
+      "KEYPOINT_CONF_THRESHOLD": 0.3,
+      "KINEMATICS": {
+        "smooth_seconds": 1.0,
+        "travel_lag_seconds": 1.0,
+        "still_speed": 0.12,
+        "still_pose_energy": 0.22,
+        "ultra_still_pose": 0.08,
+        "face_hidden_conf": 0.25,
+        "pose_collapse_conf": 0.12,
+        "edge_margin_su": 0.9,
+        "frame_border_frac": 0.03,
+        "floatable_coupled_su": 1.2,
+        "floatable_decoupled_su": 2.2,
+        "floatable_hold_seconds": 2.5,
+        "event_recent_seconds": 7.0,
+        "min_scale_px": 8.0,
+        "arms_working_su": 0.9
+      },
+      "LIVE_SCORE_EVERY_N_FRAMES": 4,
+      "MIN_TRACK_SAMPLES": 8,
+      "NORMAL_ACTIVITY_CONF_MIN": 0.6,
+      "PASSIVE_STILL_ONLY_FACTOR": 2.0,
+      "POSE_FACE_DOWN_MIN_REL": 0.3,
+      "POSE_KP_CONF_HI": 0.55,
+      "POSE_KP_CONF_LO": 0.25,
+      "POSE_RELIABLE_MIN": 0.5,
+      "POSE_SIZE_HI_PX": 40.0,
+      "POSE_SIZE_LO_PX": 16.0,
+      "PROGRESS_SECONDS": 2.5,
+      "SHALLOW_CHILD_PRIOR": 0.25,
+      "STROKE_PERIODICITY_MIN": 0.45,
+      "STROKE_PERIODIC_HZ_MAX": 1.4,
+      "THRASH_HZ_MIN": 1.5,
+      "TORSO_HORIZONTAL_DEG": 35.0,
+      "TORSO_SWIMMING_DEG": 45.0,
+      "TORSO_VERTICAL_DEG": 60.0,
+      "CLIP_RENDER_MAX_FPS": 10.0,
+      "VELOCITY_STATIONARY_SU": 0.15,
+      "VELOCITY_SWIMMING_SU": 0.45,
+      "VELOCITY_WINDOW_FRAMES": 30,
+      "WADING_STILL_CAP": 0.3,
+      "RAISE_MIN_POSITIVE_S": 0.0,
+      "PASSIVE_NEVER_TRAVELLED_SU": 0.0,
+      "ALERT_ACTIVE_MIN_CONFIDENCE": 0.6,
+      "ALERT_FLOATABLE_REASON": false,
+      "ALERT_EVENT_CATEGORY_LOCK": true,
+      "SUBMERGED_FOLLOW": false,
+      "SUBMERGED_FOLLOW_BG_ALPHA": 0.03,
+      "SUBMERGED_FOLLOW_CONFIRM_SECONDS": 1.0,
+      "SUBMERGED_FOLLOW_DARK_DELTA": 15.0,
+      "SUBMERGED_FOLLOW_ISOLATION": 2.0,
+      "SUBMERGED_FOLLOW_MAX_SECONDS": 60.0,
+      "SUBMERGED_FOLLOW_MIN_TRACK_SECONDS": 1.0,
+      "SUBMERGED_FOLLOW_MISS_SECONDS": 2.0,
+      "SUBMERGED_FOLLOW_SEARCH": 1.0
+    }
+  }
+}

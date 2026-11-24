@@ -1,0 +1,49 @@
+# Life Guard reverse proxy (Caddy, Apache-2.0) - rendered by deploy/windows/install.ps1 into
+# <DataDir>\caddy\Caddyfile. Do not edit the rendered file by hand: re-run install.ps1.
+#
+#   * TLS:     {{TLS_MODE}}
+#   * /api/*   -> the API on 127.0.0.1:{{API_PORT}} (HTTP, WebSocket and MJPEG streams; never exposed directly)
+#   * /*       -> the built operator UI ({{FRONTEND}}), SPA fallback to index.html
+#   * same origin for UI + API, so the session cookie (Secure, HttpOnly, SameSite) and the WebSocket
+#     Origin check work without CORS (app/ws.py origin_allowed: Origin host == Host header, preserved here)
+{
+	admin off
+	{{GLOBAL_OPTIONS}}
+}
+
+{{SITE_ADDRESS}} {
+	{{TLS_DIRECTIVE}}
+	encode zstd gzip
+
+	log {
+		output file "{{LOG_DIR}}/caddy-access.log" {
+			roll_size 10MiB
+			roll_keep 10
+		}
+		format json
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:{{API_PORT}} {
+			# MJPEG model view and the WebSocket feed are long-lived streams: never buffer them
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * "{{FRONTEND}}"
+		try_files {path} /index.html
+		file_server
+	}
+}
+{{NTFY_BLOCK}}

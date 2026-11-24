@@ -1,0 +1,20 @@
+# D-FINE-L v0.3 (sprint 2026-11-12): v0.1 fine-tuned on its own training set PLUS auto-labelled frames of the new
+# footage (phone clips of the owner's drowning dataset and the web dev clips; tools/sprint_labels.py). Purpose: keep
+# the crowd recall v0.1 has on the pool camera and stop the junk detections it makes on every other view.
+# Start from work_dirs/dfine_l_v01/best_stg1.pth via -t.
+__include__: ['dfine_l_v0.yml']
+
+output_dir: C:/lifeguard/training/work_dirs/dfine_l_v03
+epochs: 10                       # augmentation and multi-scale stop for the last 2 epochs
+lr_warmup_scheduler: {type: LinearWarmup, warmup_duration: 100}
+
+train_dataloader:
+  dataset:
+    ann_file: C:/lifeguard/training/data/coco/sprint_r1/train.json
+    transforms:
+      policy:
+        name: stop_epoch
+        epoch: 8
+        ops: ['PoolPhotometric', 'RandomZoomOut', 'RandomIoUCrop']
+  collate_fn:
+    stop_epoch: 8

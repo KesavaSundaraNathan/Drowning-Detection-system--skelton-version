@@ -1,0 +1,10 @@
+# [Phase 6] Research / data-prep scripts: they print, patch sys.path and shell out by design, so the product's strict
+# rule set (root pyproject.toml) does not apply. A correctness-only floor instead (owner decision 2026-11-15,
+# reports/Phase 6 fixes research.md): syntax errors, pyflakes, invalid escapes, loop-closure bugs. Not reformatted.
+extend = "../../pyproject.toml"
+
+[lint]
+select = ["E9", "F", "W605", "B023"]
+
+[format]
+exclude = ["*.py"]

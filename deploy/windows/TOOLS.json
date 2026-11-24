@@ -1,0 +1,60 @@
+{
+  "format": "aquaguard-tools/1",
+  "note": "Third-party executables the installer and acceptance test use. Downloaded to build/tools (gitignored) after approval; install.ps1 and acceptance.ps1 refuse a binary whose sha256 differs.",
+  "tools": {
+    "caddy": {
+      "version": "2.11.7",
+      "licence": "Apache-2.0",
+      "source": "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_windows_amd64.zip",
+      "archive_check": "sha512 from caddy_2.11.7_checksums.txt: OK",
+      "exe": "caddy/caddy_2.11.7/caddy.exe",
+      "use": "service LifeGuardProxy (TLS, UI, /api reverse proxy)",
+      "exe_sha256": "5f93a9bd555f3aac9d33af2756ba14b3519d8cca4ffd55256bdaeab444c9db2a"
+    },
+    "nssm": {
+      "version": "2.24",
+      "licence": "Public domain",
+      "source": "https://nssm.cc/release/nssm-2.24.zip",
+      "archive_check": "sha256 727d1e42275c605e0f04aba98095c38a8e1e46def453cdffce42869428aa6743 (the published value)",
+      "exe": "nssm/nssm-2.24/win64/nssm.exe",
+      "use": "Windows service wrapper (deploy/windows/services.ps1)",
+      "exe_sha256": "f689ee9af94b00e9e3f0bb072b34caaf207f32dcb4f5782fc9ca351df9a06c97"
+    },
+    "ntfy": {
+      "version": "2.28.0",
+      "licence": "Apache-2.0 / GPL-2.0 (dual)",
+      "source": "https://github.com/binwiederhier/ntfy/releases/download/v2.28.0/ntfy_2.28.0_windows_amd64.zip",
+      "archive_check": "sha256 from checksums.txt: OK (Phase 5)",
+      "exe": "ntfy/ntfy_2.28.0_windows_amd64/ntfy.exe",
+      "use": "service LifeGuardNtfy (push alerts to phones)",
+      "exe_sha256": "0a75ef5458c6f2b19ad3f420155e0026c6613f219dddb44b16ad1b0370e8464b"
+    },
+    "mediamtx": {
+      "version": "1.21.1",
+      "licence": "MIT",
+      "source": "https://github.com/bluenviron/mediamtx/releases/download/v1.21.1/mediamtx_v1.21.1_windows_amd64.zip",
+      "archive_check": "sha256 from checksums.sha256: OK",
+      "exe": "mediamtx/mediamtx_v1.21.1/mediamtx.exe",
+      "use": "acceptance.ps1 only (simulated RTSP cameras); never installed as a service",
+      "exe_sha256": "7de0b5c1060f716cc813c6fab302c938f1fe7faccbd92eba6567f3bf18c9054e"
+    },
+    "ffmpeg": {
+      "version": "n8.1 (BtbN latest LGPL build, 2026-10)",
+      "licence": "LGPL-2.1+",
+      "source": "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-lgpl-8.1.zip",
+      "archive_check": "sha256 from checksums.sha256: OK",
+      "exe": "ffmpeg/ffmpeg-n8.1-latest-win64-lgpl-8.1/bin/ffmpeg.exe",
+      "use": "acceptance.ps1 only (publishes eval clips to MediaMTX with -c copy, no re-encode); site_session.ps1 (drill recording, -c copy)",
+      "exe_sha256": "4c848fbbed1137e3149d7c8cffcb26d77ca3214d3c494e525c287c3857712706"
+    },
+    "ffprobe": {
+      "version": "n8.1 (BtbN latest LGPL build, 2026-10)",
+      "licence": "LGPL-2.1+",
+      "source": "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-lgpl-8.1.zip",
+      "archive_check": "sha256 from checksums.sha256: OK (the same archive as ffmpeg)",
+      "exe": "ffmpeg/ffmpeg-n8.1-latest-win64-lgpl-8.1/bin/ffprobe.exe",
+      "use": "site_session.ps1 only (camera check: keyframe interval, measured fps, B-frames); never used by the services",
+      "exe_sha256": "62d6f24a030cfc3eef016323c64aa9a0d2bd4da62d6b15dc4825c51a74e57cce"
+    }
+  }
+}

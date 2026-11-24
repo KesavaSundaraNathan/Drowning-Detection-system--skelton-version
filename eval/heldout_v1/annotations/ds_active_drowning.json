@@ -1,0 +1,140 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning",
+  "video": "../../build/v2_baseline/Datasets/active drowning.mp4",
+  "camera_id": "ds_active_drowning",
+  "split": "test",
+  "labelled": true,
+  "fps": 29.883,
+  "width": 720,
+  "height": 1280,
+  "frame_count": 2427,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Toddler slips in from the edge at ~5 s and drifts submerged; adults notice at ~57 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          567,
+          688,
+          719,
+          816,
+          "partial"
+        ],
+        [
+          90,
+          560,
+          720,
+          700,
+          850,
+          "partial"
+        ],
+        [
+          180,
+          500,
+          780,
+          640,
+          890,
+          "partial"
+        ],
+        [
+          270,
+          520,
+          790,
+          660,
+          900,
+          "partial"
+        ],
+        [
+          600,
+          320,
+          650,
+          520,
+          780,
+          "partial"
+        ],
+        [
+          900,
+          170,
+          630,
+          320,
+          740,
+          "partial"
+        ],
+        [
+          1300,
+          100,
+          600,
+          300,
+          730,
+          "partial"
+        ],
+        [
+          1700,
+          40,
+          500,
+          340,
+          660,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          89,
+          "edge"
+        ],
+        [
+          90,
+          179,
+          "in_water"
+        ],
+        [
+          180,
+          269,
+          "in_water"
+        ],
+        [
+          270,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1299,
+          "in_water"
+        ],
+        [
+          1300,
+          1699,
+          "in_water"
+        ],
+        [
+          1700,
+          2426,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "SUBMERSION",
+      "start_frame": 150,
+      "end_frame": 1700,
+      "staged": false
+    }
+  ]
+}

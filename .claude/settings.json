@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./training/cvat/credentials.txt)",
+      "Read(./training/work_dirs/**)",
+      "Read(./training/.venv/**)",
+      "Read(./training/third_party/**)",
+      "Read(./training/data/**)",
+      "Read(./training/labels/**)",
+      "Read(./training/weights/**)",
+      "Read(./training_dataset/**)",
+      "Read(./Datasets/**)",
+      "Read(./Drowning Dataset/**)",
+      "Read(./Red Rescue/**)",
+      "Read(**/*.onnx)",
+      "Read(**/*.pth)",
+      "Read(**/*.engine)",
+      "Read(**/*.npz)",
+      "Read(**/*.mp4)",
+      "Read(**/*.avi)",
+      "Read(**/*.mov)",
+      "Read(**/*.mkv)"
+    ]
+  }
+}

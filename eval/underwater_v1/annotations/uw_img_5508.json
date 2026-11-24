@@ -1,0 +1,17 @@
+{
+ "format": "aquaguard-eval/1",
+ "clip_id": "uw_img_5508",
+ "video": "../../Drowning Dataset/IMG_5508.mov",
+ "camera_id": "uw_img_5508",
+ "split": "dev",
+ "labelled": false,
+ "fps": 30.0,
+ "width": 3840,
+ "height": 2160,
+ "frame_count": 999,
+ "annotated_frames": [],
+ "conditions": [],
+ "tracks": [],
+ "events": [],
+ "continuity_track": 1
+}

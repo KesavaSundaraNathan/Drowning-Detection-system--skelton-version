@@ -1,0 +1,88 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_active_drowning_v3",
+  "video": "../../build/v2_baseline/Datasets/active drowning (3).mp4",
+  "camera_id": "ds_active_drowning_v3",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 1920,
+  "height": 1080,
+  "frame_count": 398,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Screen recording of CCTV; swimmer in distress, lifeguard pulls them out at ~8-10 s. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          0,
+          300,
+          380,
+          900,
+          650,
+          "partial"
+        ],
+        [
+          150,
+          300,
+          380,
+          900,
+          650,
+          "partial"
+        ],
+        [
+          300,
+          250,
+          400,
+          900,
+          680,
+          "partial"
+        ],
+        [
+          390,
+          250,
+          400,
+          900,
+          680,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          149,
+          "in_water"
+        ],
+        [
+          150,
+          299,
+          "in_water"
+        ],
+        [
+          300,
+          389,
+          "in_water"
+        ],
+        [
+          390,
+          397,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "ACTIVE_DROWNING",
+      "start_frame": 0,
+      "end_frame": 300,
+      "staged": false
+    }
+  ]
+}

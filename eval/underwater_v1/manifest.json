@@ -1,0 +1,208 @@
+{
+ "format": "aquaguard-eval-manifest/1",
+ "name": "underwater_v1",
+ "source": "data/dataset/lean_underwater_v1 (coco train+val), eval/tools/lean_to_continuity.py",
+ "purpose": "victim track continuity at 1 Hz only (no events); lean_v2 trained on lean_split=train clips",
+ "clips": [
+  {
+   "clip_id": "uw_img_5488",
+   "annotation": "annotations/uw_img_5488.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5490",
+   "annotation": "annotations/uw_img_5490.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5491",
+   "annotation": "annotations/uw_img_5491.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5492",
+   "annotation": "annotations/uw_img_5492.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5493",
+   "annotation": "annotations/uw_img_5493.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5495",
+   "annotation": "annotations/uw_img_5495.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5498",
+   "annotation": "annotations/uw_img_5498.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5502",
+   "annotation": "annotations/uw_img_5502.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5506",
+   "annotation": "annotations/uw_img_5506.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5510",
+   "annotation": "annotations/uw_img_5510.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5511",
+   "annotation": "annotations/uw_img_5511.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5515",
+   "annotation": "annotations/uw_img_5515.json",
+   "split": "dev",
+   "labelled": true
+  },
+  {
+   "clip_id": "uw_img_5516",
+   "annotation": "annotations/uw_img_5516.json",
+   "split": "dev",
+   "labelled": true
+  }
+ ],
+ "clip_meta": [
+  {
+   "clip_id": "uw_img_5488",
+   "video": "IMG_5488.mov",
+   "video_sha256": "19543431d7ef417879d4096adaa719f07dd00c0795d3b38c3424ac6a7725cc86",
+   "lean_split": "train",
+   "keyframes": 5,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5490",
+   "video": "IMG_5490.mov",
+   "video_sha256": "e476515a03459b1f44c7e47b3c741acfa590fcc6ee66ebc843b291222931c6eb",
+   "lean_split": "train",
+   "keyframes": 4,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5491",
+   "video": "IMG_5491.mov",
+   "video_sha256": "2f01a5bd77e90264c9828ebf1fd7208840256960b6e3d72dba2319ab00b12e17",
+   "lean_split": "train",
+   "keyframes": 11,
+   "multi_box_frames": 1
+  },
+  {
+   "clip_id": "uw_img_5492",
+   "video": "IMG_5492.mov",
+   "video_sha256": "97b779a5efc34d37d4f3c121297a62b7e3abda3154fefd29bb2ef07341d0f92e",
+   "lean_split": "train",
+   "keyframes": 4,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5493",
+   "video": "IMG_5493.mov",
+   "video_sha256": "31bb942410d607c93db36a9359a3c78a1475540a0951562334207b7b317161fb",
+   "lean_split": "train",
+   "keyframes": 18,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5495",
+   "video": "IMG_5495.mov",
+   "video_sha256": "25faab27c17e823462127e8dd9d10ebe0e1bfc8e78b41fdc2c047cfa3012fe8f",
+   "lean_split": "train",
+   "keyframes": 18,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5498",
+   "video": "IMG_5498.mov",
+   "video_sha256": "25d3d4949ec19a541cd68b061535b15c7d85f2feeaa5c389a1e37f680df9c237",
+   "lean_split": "train",
+   "keyframes": 31,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5502",
+   "video": "IMG_5502.mov",
+   "video_sha256": "54c4613000ea8c281b14fd23409589e6e4b2a67d7377a46aafd9e87a5367ff66",
+   "lean_split": "train",
+   "keyframes": 10,
+   "multi_box_frames": 1
+  },
+  {
+   "clip_id": "uw_img_5504",
+   "video": "IMG_5504.mov",
+   "video_sha256": "1c2d7e1dca2b63635a602746c0a35550f8e6c4e3eaa0ce9a042f7d139d28d773",
+   "lean_split": "train",
+   "keyframes": 0,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5506",
+   "video": "IMG_5506.mov",
+   "video_sha256": "c200c1832bd14140f57b836485b768bcbacb1a48a60471406d3af7a3479ba9c9",
+   "lean_split": "train",
+   "keyframes": 1,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5508",
+   "video": "IMG_5508.mov",
+   "video_sha256": "d1bceb39a77389d9a6efbfa1ec1b6ad1be87c1eb104a927553971c2b7c1c26f6",
+   "lean_split": "train",
+   "keyframes": 0,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5510",
+   "video": "IMG_5510.mov",
+   "video_sha256": "67e4660e115c4ef18c09b579f4ed90959a3d8bb6a98e103d381ef67851ce8e21",
+   "lean_split": "train",
+   "keyframes": 35,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5511",
+   "video": "IMG_5511.mov",
+   "video_sha256": "0103963ab1ed833a6e357083d33ccf30e519d2eb7b8575b4592eab64a91e3b37",
+   "lean_split": "train",
+   "keyframes": 35,
+   "multi_box_frames": 1
+  },
+  {
+   "clip_id": "uw_img_5515",
+   "video": "IMG_5515.mov",
+   "video_sha256": "ba39b38d130a608f1919e4eb52ea0a297a571b4a53a430b40740358eb8d366be",
+   "lean_split": "val",
+   "keyframes": 4,
+   "multi_box_frames": 0
+  },
+  {
+   "clip_id": "uw_img_5516",
+   "video": "IMG_5516.mov",
+   "video_sha256": "1138390e2cdf305df9a33f166919195f85318aa23972d4b96810c95e8827c3e3",
+   "lean_split": "val",
+   "keyframes": 1,
+   "multi_box_frames": 0
+  }
+ ]
+}

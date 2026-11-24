@@ -1,0 +1,85 @@
+# Python
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+
+# Secrets and local config — templates (*.example) stay tracked
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Runtime data (lives under C:\ProgramData\LifeGuard in production)
+/var/
+/runtime/
+*.db
+*.db-wal
+*.db-shm
+
+# Model weights: never in git (sha256 + provenance tracked in backend/models/MODELS.json)
+backend/models/**/*.onnx
+backend/models/**/*.pth
+backend/models/**/*.pt
+backend/models/**/*.engine
+backend/models/**/*.npz
+
+# Footage: never in git (rights: see docs/phase_reports/phase0/evidence/RIGHTS.csv)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Local CI artefacts
+/build/
+/ci-artifacts/
+
+# Swimmer-model training (training/MASTER_PROMPT.md): no footage, labels, weights, work dirs, CVAT data or logs in git
+/training_dataset/
+/training/data/
+/training/labels/
+/training/work_dirs/
+/data/dataset/
+/training/weights/
+/training/third_party/
+/training/cvat/
+/training/logs/
+/training/tools/queue/queue_state.json
+
+# Local-only files (CLAUDE.md "never commit" list) and scratch
+/venv/
+/extra/
+/.claude/*
+!/.claude/settings.json
+!/.claude/skills/
+# desktop preview config: local only, never holds credentials
+/.claude/launch.json
+/projecttree.txt
+/lifeguard-branding.zip
+*.tsbuildinfo
+*.pth
+/docs/0*.md
+/docs/phase_reports/phase12/evidence/
+/Report_Evaluation_Score.md
+/CLAUDE.md
+
+# raw media and Windows shortcuts (owner, 2026-11-14): never commit
+/Datasets/
+*.lnk
+
+# [rtmpose clone] sample frames from footage with people in it - local only
+/docs/rtmpose_skeleton_*.jpg

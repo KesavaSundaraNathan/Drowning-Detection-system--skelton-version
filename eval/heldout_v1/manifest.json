@@ -1,0 +1,101 @@
+{
+  "format": "aquaguard-eval-manifest/1",
+  "clips": [
+    {
+      "clip_id": "ds_active_drowning",
+      "annotation": "annotations/ds_active_drowning.json",
+      "split": "test",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_3",
+      "annotation": "annotations/ds_active_drowning_3.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v2",
+      "annotation": "annotations/ds_active_drowning_v2.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v3",
+      "annotation": "annotations/ds_active_drowning_v3.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v4",
+      "annotation": "annotations/ds_active_drowning_v4.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v5",
+      "annotation": "annotations/ds_active_drowning_v5.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v6",
+      "annotation": "annotations/ds_active_drowning_v6.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v7",
+      "annotation": "annotations/ds_active_drowning_v7.json",
+      "split": "test",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v8",
+      "annotation": "annotations/ds_active_drowning_v8.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_active_drowning_v9",
+      "annotation": "annotations/ds_active_drowning_v9.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_floatable_drowning",
+      "annotation": "annotations/ds_floatable_drowning.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_floatable_drowning_v2",
+      "annotation": "annotations/ds_floatable_drowning_v2.json",
+      "split": "test",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_normal_swimming",
+      "annotation": "annotations/ds_normal_swimming.json",
+      "split": "test",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_passive_drowning",
+      "annotation": "annotations/ds_passive_drowning.json",
+      "split": "test",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_passive_drowning_v2",
+      "annotation": "annotations/ds_passive_drowning_v2.json",
+      "split": "dev",
+      "labelled": true
+    },
+    {
+      "clip_id": "ds_passive_drowning_v3",
+      "annotation": "annotations/ds_passive_drowning_v3.json",
+      "split": "test",
+      "labelled": true
+    }
+  ]
+}

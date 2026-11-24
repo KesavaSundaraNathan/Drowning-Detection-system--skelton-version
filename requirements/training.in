@@ -1,0 +1,26 @@
+# Offline training environment (D-FINE detector, behaviour model).
+# A SEPARATE venv on a training machine — never installed on a serving box,
+# never imported by the server (enforced by tests/unit/test_import_boundaries.py).
+# torch/torchvision CUDA 12.6 builds come from the PyTorch index; everything is hash-pinned,
+# so a package can never be swapped for one from the other index.
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+# torch 2.5.1 (v2's build) has 19 advisories incl. CVE-2025-32434 (torch.load weights_only RCE) and
+# CVE-2026-24747; PyTorch publishes no cu121 build after 2.5, so training moves to CUDA 12.6.
+# D-FINE compatibility with 2.14 is verified when the training venv is built (Phase 7).
+torch==2.14.1+cu126              # BSD-3 — pip-audit clean 2026-10-07
+torchvision==0.29.1+cu126        # BSD-3 — pairs with torch 2.14.1
+onnx>=1.22                       # Apache-2.0 — export + metadata; >=1.22 fixes 9 advisories in 1.17
+numpy>=1.26                      # BSD-3
+scipy>=1.11                      # BSD-3
+
+# D-FINE's own requirements (github.com/Peterande/D-FINE), verified 2026-09-26
+faster-coco-eval>=1.6.6          # Apache-2.0
+PyYAML>=6.0                      # MIT
+tensorboard>=2.14                # Apache-2.0
+calflops                         # MIT
+transformers                     # Apache-2.0 — imported by calflops
+loguru                           # MIT
+pycocotools                      # BSD-2-Clause
+matplotlib                       # PSF-based (BSD-compatible) - imported by D-FINE src/solver/validator.py but
+                                 # missing from its requirements.txt (found Phase 7 when training first ran)

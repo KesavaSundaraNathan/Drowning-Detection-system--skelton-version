@@ -1,0 +1,22 @@
+[Unit]
+Description=Life Guard API and live monitoring
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@INSTALL_DIR@/backend
+Environment=LIFEGUARD_ENV_FILE=@DATA_DIR@/lifeguard.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=@VENV@/bin/python -m uvicorn --factory lifeguard.app.main:create_app --host 127.0.0.1 --port @API_PORT@ --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=on-failure
+RestartSec=0.5
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=@DATA_DIR@
+
+[Install]
+WantedBy=multi-user.target

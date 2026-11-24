@@ -1,0 +1,10 @@
+{
+  "schema": "aquaguard-site-profile/1",
+  "site": "Client pool (indoor 25 m, 5 lanes)",
+  "note": "No secrets here. Edit 'cameras' to the names registered on the Cameras page before the session; the camera rules are docs/CAMERA_SETUP.md; the session rules are eval/site/levers_phase11.json gates_wp6.",
+  "cameras": ["Corner A", "Corner B", "Corner C", "Corner D"],
+  "camera": {"codec": "hevc", "size": [2560, 1440], "fps": 15, "gop_s": 1.0},
+  "pool": {"length_m": 25.0, "lanes": 5, "width_m": "measured at calibration"},
+  "required_pool_zones": ["Teaching platform"],
+  "settings": {"target_analysis_fps": 15, "first_frame_timeout_s": 12, "camera_fps_fallback": 15}
+}

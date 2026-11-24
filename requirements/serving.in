@@ -1,0 +1,50 @@
+# Serving runtime (the only thing installed on a production box).
+# Compiled to serving.lock with hashes:  python tools/lock.py
+# Installed only with:                   pip install --require-hashes -r requirements/serving.lock
+#
+# Rules (plan Phase 1):
+#   * NO torch / torchvision — training has its own lock (training.lock).
+#   * NO opencv-contrib — headless OpenCV only (no GUI, no contrib modules).
+#   * CUDA/cuDNN come from NVIDIA's own wheels, never from torch\lib (audit #4: a clean
+#     install used to fall back to the CPU silently because the DLLs only existed in torch).
+
+# ── GPU inference stack (v7, 2026-10-21) ─────────────────────────────────────
+# The v2-baseline parity stack (onnxruntime-gpu 1.19.2 + CUDA 12.1) does not run on Blackwell GPUs (sm_120,
+# e.g. RTX 5060). These are the builds the v7 evidence (docs/evidence/v7) was measured with. Changing them means
+# re-measuring: delete <data_dir>\capacity_cache.json, rebuild the TensorRT engines, re-run the eval.
+# ORT 1.31 links nvinfer_10.dll, so TensorRT 11 will not load.
+--extra-index-url https://pypi.nvidia.com
+onnxruntime-gpu==1.31.0          # MIT
+numpy==2.5.3                     # BSD-3
+scipy==1.18.1                    # BSD-3 — Hungarian assignment (ByteTrack)
+opencv-python-headless==5.0.0.93 # Apache-2.0 (bundled FFmpeg: LGPL, dynamically linked)
+
+# CUDA 13 / cuDNN 9 runtime wheels (DLLs in nvidia/cu13/bin/x86_64, found by vision/inference/cuda_dlls.py)
+nvidia-cuda-runtime==13.4.92     # cudart64_13.dll
+nvidia-cublas==13.8.0.4          # cublas64_13.dll, cublasLt64_13.dll
+nvidia-cufft==12.4.0.43          # cufft64_12.dll
+nvidia-curand==10.4.4.72         # curand64_10.dll
+nvidia-cuda-nvrtc==13.4.92       # nvrtc (cuDNN 9 runtime fusion)
+nvidia-nvjitlink==13.4.92        # nvJitLink
+nvidia-cudnn-cu13==9.27.0.42     # cudnn64_9.dll (+ sub-libraries)
+# TensorRT runtime for the TensorRT execution provider (NVIDIA TensorRT SLA, redistributable runtime)
+tensorrt-cu13-libs==10.16.1.11   # nvinfer_10.dll & co. (pypi.nvidia.com)
+
+# ── Web / API ─────────────────────────────────────────────────────────────────
+fastapi>=0.115                   # MIT
+uvicorn[standard]>=0.30          # BSD-3
+pydantic>=2.7                    # MIT
+pydantic-settings>=2.3           # MIT
+python-multipart>=0.0.9          # Apache-2.0
+
+# ── Persistence ───────────────────────────────────────────────────────────────
+sqlalchemy>=2.0.30               # MIT
+alembic>=1.13                    # MIT
+
+# ── Security ──────────────────────────────────────────────────────────────────
+bcrypt>=4.1                      # Apache-2.0
+cryptography>=42                 # Apache-2.0 OR BSD-3 — Fernet for camera credentials
+pywin32>=306 ; sys_platform == "win32"   # PSF — DPAPI protection of the Fernet key
+
+# ── Observability ─────────────────────────────────────────────────────────────
+prometheus-client>=0.20          # Apache-2.0

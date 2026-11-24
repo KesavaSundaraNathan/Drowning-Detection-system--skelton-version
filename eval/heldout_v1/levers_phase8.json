@@ -1,0 +1,27 @@
+{
+  "format": "aquaguard-decision-rule/1",
+  "name": "phase8_detection_levers",
+  "registered": "2026-10-08",
+  "split": "eval/heldout_v1 (frozen in 44cd5cf); decisions use the TEST split only",
+  "baseline": {
+    "detector": "rtmdet_m_8xb32-300e_coco_20220719_112220-229f527c_dynbatch.onnx (640)",
+    "thresholds": "backend/aquaguard/vision/thresholds.json 2.1.0 (DET_TILING off)"
+  },
+  "arms": {
+    "input_960": {"detector": "rtmdet_..._dynbatch_960.onnx", "thresholds": "2.1.0 unchanged"},
+    "input_1280": {"detector": "rtmdet_..._dynbatch_1280.onnx", "thresholds": "2.1.0 unchanged"},
+    "tiling_wbf": {"detector": "640 baseline", "thresholds": "2.1.0 with DET_TILING = \"wbf\""}
+  },
+  "criteria": [
+    "Each arm is compared with the baseline on the TEST split by the first criterion that differs, in this order (same as split.json decision_rules):",
+    "1. test event recall - higher wins",
+    "2. false alerts on the normal-swimming clip - fewer wins",
+    "3. all false alerts on test - fewer wins",
+    "4. median time-to-alert over events detected by BOTH - lower by >= 0.5 s wins",
+    "5. victim ID changes at the labelled victim keyframes - fewer wins"
+  ],
+  "tie": "A tie on every criterion is NOT a win: the lever stays OFF.",
+  "several_winners": "If more than one arm wins, the winners are compared with each other by the same criteria and only the best is switched on; combinations are not tested in Phase 8.",
+  "cost": "Per-frame latency (p50) and the admitted camera count are reported for every arm; they do not decide, but a winner that admits 0 cameras at 10 fps on the dev GPU is reported as not deployable and stays OFF.",
+  "dev_split": "Dev numbers are not run for every arm (cost); they are run for a winner only, for diagnosis, and never decide."
+}

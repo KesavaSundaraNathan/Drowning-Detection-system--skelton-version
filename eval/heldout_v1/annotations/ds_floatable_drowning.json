@@ -1,0 +1,114 @@
+{
+  "format": "aquaguard-eval/1",
+  "clip_id": "ds_floatable_drowning",
+  "video": "../../build/v2_baseline/Datasets/floatable drowning.mp4",
+  "camera_id": "ds_floatable_drowning",
+  "split": "dev",
+  "labelled": true,
+  "fps": 30.0,
+  "width": 720,
+  "height": 594,
+  "frame_count": 1759,
+  "annotated_frames": [],
+  "conditions": [],
+  "notes": "Outdoor pool with rings; a person stays nearly motionless, head at the surface, from ~10 s to the end while others swim around. EVENT-LEVEL ground truth only (victim region at keyframes).",
+  "stock_footage": false,
+  "tracks": [
+    {
+      "id": 1,
+      "age": "unknown",
+      "boxes": [
+        [
+          300,
+          270,
+          410,
+          390,
+          530,
+          "partial"
+        ],
+        [
+          600,
+          240,
+          430,
+          390,
+          570,
+          "partial"
+        ],
+        [
+          900,
+          190,
+          440,
+          340,
+          570,
+          "partial"
+        ],
+        [
+          1200,
+          220,
+          430,
+          370,
+          570,
+          "partial"
+        ],
+        [
+          1500,
+          240,
+          430,
+          390,
+          570,
+          "partial"
+        ],
+        [
+          1758,
+          240,
+          430,
+          410,
+          594,
+          "partial"
+        ]
+      ],
+      "state": [
+        [
+          0,
+          599,
+          "in_water"
+        ],
+        [
+          600,
+          899,
+          "in_water"
+        ],
+        [
+          900,
+          1199,
+          "in_water"
+        ],
+        [
+          1200,
+          1499,
+          "in_water"
+        ],
+        [
+          1500,
+          1757,
+          "in_water"
+        ],
+        [
+          1758,
+          1758,
+          "in_water"
+        ]
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "track_id": 1,
+      "type": "PASSIVE_DROWNING",
+      "start_frame": 300,
+      "end_frame": 1758,
+      "staged": false
+    }
+  ]
+}

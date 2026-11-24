@@ -1,0 +1,238 @@
+{
+  "format": "aquaguard-split/1",
+  "name": "heldout_v1",
+  "frozen": "2026-10-08",
+  "source": "build/v2_baseline/eval/dataset_v1 (event-level GT, make_gt.py 2026-10-05) + Datasets/RIGHTS.csv",
+  "counts": {
+    "dev": 10,
+    "test": 6,
+    "test_events": 5
+  },
+  "clips": [
+    {
+      "clip_id": "ds_active_drowning",
+      "video": "active drowning.mp4",
+      "video_sha256": "f61ced62381c1cd38cb69e1f594f873ac9ed845c96e76ea7ee8e2d9a98d0ced3",
+      "incident_group": "G09",
+      "split": "test",
+      "stratum": "active",
+      "tuned_on": false,
+      "events": [
+        "SUBMERSION"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_3",
+      "video": "active drowning 3.mp4",
+      "video_sha256": "473cfe80235ac18494fa24e34618d29ee4a24337e338605d86f32b15dd47ac10",
+      "incident_group": "G02",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v2",
+      "video": "active drowning (2).mp4",
+      "video_sha256": "797f5c1161188a5efaceb3fd7dd32a2ef102e442a6ffc288661e4e1bc6a6c981",
+      "incident_group": "G02",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v3",
+      "video": "active drowning (3).mp4",
+      "video_sha256": "9b184e5667ebe20457066f880b3bb2d35556f6b441023cd3eb50980c2f2d0993",
+      "incident_group": "G03",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": false,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v4",
+      "video": "active drowning (4).mp4",
+      "video_sha256": "2ea7b737ae4ea936f91d0509b791ae635bd884e00050e74fb66f038e2196131a",
+      "incident_group": "G04",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "SUBMERSION"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v5",
+      "video": "active drowning (5).mp4",
+      "video_sha256": "28612a806127fe2d448e6111924444c5eebab061fd3e208a42dbb2987cd211bc",
+      "incident_group": "G05",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v6",
+      "video": "active drowning (6).mp4",
+      "video_sha256": "7bf9a66d093149997ac910f5945f3cbcf4ed34fb50906459c885aeeeb96a8a6c",
+      "incident_group": "G06",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": false,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v7",
+      "video": "active drowning (7).mp4",
+      "video_sha256": "8ca3a120f3a6aeb6ff0c1ac1930e393ebdcd4454d9b44fc32841fae8b0105077",
+      "incident_group": "G07",
+      "split": "test",
+      "stratum": "active",
+      "tuned_on": false,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v8",
+      "video": "Active drowning (8).mp4",
+      "video_sha256": "40dd9b4de5b5c15ad4c2f7b175199bddb56d935a84c0226909008a3a8c2092bb",
+      "incident_group": "G01",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": false,
+      "events": [
+        "SUBMERSION",
+        "SUBMERSION"
+      ]
+    },
+    {
+      "clip_id": "ds_active_drowning_v9",
+      "video": "active drowning (9).mp4",
+      "video_sha256": "6e70ab2f4c9c1d9056013026f0d31f71516cf87eb41a2d048d3d737ac9e93407",
+      "incident_group": "G02",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "ACTIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_floatable_drowning",
+      "video": "floatable drowning.mp4",
+      "video_sha256": "3688db5fa11858a7c7282feb0cfcd7d158ec3894b809c49f5e66c5ac801d18e2",
+      "incident_group": "G11",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": true,
+      "events": [
+        "PASSIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_floatable_drowning_v2",
+      "video": "floatable drowning (2).mp4",
+      "video_sha256": "0bfb4f84f0a846172f5a92d45d495306889b56acf9ba6b9a59d5e93ffa57e990",
+      "incident_group": "G10",
+      "split": "test",
+      "stratum": "floatable",
+      "tuned_on": false,
+      "events": [
+        "FLOATABLE_FAILURE"
+      ]
+    },
+    {
+      "clip_id": "ds_normal_swimming",
+      "video": "normal swimming.mp4",
+      "video_sha256": "c757144eaad7297166405f838f10547ec8ea70bdc395075e2e483bb10bc0c742",
+      "incident_group": "G12",
+      "split": "test",
+      "stratum": "normal",
+      "tuned_on": false,
+      "events": []
+    },
+    {
+      "clip_id": "ds_passive_drowning",
+      "video": "passive drowning.mp4",
+      "video_sha256": "b1ecc9b94526c1ec13204faf67afd6ca9f0f93e89692aa8253906794420c3cc4",
+      "incident_group": "G14",
+      "split": "test",
+      "stratum": "passive",
+      "tuned_on": false,
+      "events": [
+        "PASSIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_passive_drowning_v2",
+      "video": "passive drowning (2).mp4",
+      "video_sha256": "5ad87175e964d2409f8b5230286380a355dccf1d5b91d910d938265705374495",
+      "incident_group": "G03",
+      "split": "dev",
+      "stratum": null,
+      "tuned_on": false,
+      "events": [
+        "PASSIVE_DROWNING"
+      ]
+    },
+    {
+      "clip_id": "ds_passive_drowning_v3",
+      "video": "passive drowning (3).mp4",
+      "video_sha256": "ec08fc4456f94fd84a85e1f200e322bb876f59d9cccf7d54a36fdfb09b9ffc31",
+      "incident_group": "G13",
+      "split": "test",
+      "stratum": "passive",
+      "tuned_on": false,
+      "events": [
+        "PASSIVE_DROWNING"
+      ]
+    }
+  ],
+  "decision_rules": {
+    "applies_to": [
+      "ID_STITCHING",
+      "TRACK_FAINT_BIRTHS"
+    ],
+    "arms": {
+      "both_on": {
+        "ID_STITCHING": true,
+        "TRACK_FAINT_BIRTHS": true
+      },
+      "stitching_off": {
+        "ID_STITCHING": false,
+        "TRACK_FAINT_BIRTHS": true
+      },
+      "faint_births_off": {
+        "ID_STITCHING": true,
+        "TRACK_FAINT_BIRTHS": false
+      },
+      "both_off": {
+        "ID_STITCHING": false,
+        "TRACK_FAINT_BIRTHS": false
+      }
+    },
+    "comparison": "A flag stays ON only if the arm WITH it beats the arm WITHOUT it (other flag at its decided value; evaluated both ways) on the test split by the first criterion that differs, in this order:",
+    "criteria": [
+      "1. test event recall (events detected / events) - higher wins",
+      "2. false alerts on the normal-swimming clip - fewer wins (any > 0 also fails the release gate)",
+      "3. all false alerts on test (unmatched alerts) - fewer wins",
+      "4. median time-to-alert over events detected by BOTH arms - lower by >= 0.5 s wins",
+      "5. victim ID changes at the labelled victim keyframes inside event windows - fewer wins"
+    ],
+    "tie": "A tie on every criterion is NOT a win: the flag goes OFF (it must earn its complexity).",
+    "dev_split": "Dev numbers are reported for diagnosis only and never decide."
+  }
+}

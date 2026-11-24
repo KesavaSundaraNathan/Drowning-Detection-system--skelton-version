@@ -1,0 +1,317 @@
+{
+  "format": "aquaguard-decision-rule/1",
+  "name": "phase11_levers",
+  "registered": "2026-10-09",
+  "rule": "Every Phase 11 switch that changes detection / identity behaviour is decided by the rule registered here BEFORE its measurement (git history shows the order). Later work packages append their levers in their own commit, again before measuring.",
+  "amendments": [
+    {
+      "date": "2026-10-09",
+      "lever": "POOL_HANDOFF_GUARD",
+      "approved_by": "user (project owner), after the measurement below",
+      "change": "on_if criterion 2: '0 false SUBMERSION in S1/S3/S4/S5' -> 'false SUBMERSION in S1/S3/S4/S5 ON <= OFF' (no net-new false alarm compared with OFF).",
+      "reason": "Measured on the registered battery (evidence/wp1_identity_ab.json): the guard raises the S6 swim-over submersion 5/5 (OFF: 1/5). The only false SUBMERSION (S4 seed 103, two lane-2 swimmers passing within 0.1 m swap ids) occurs identically in all four arms, v2 included: a baseline artefact of position-only association, not caused by the guard. The absolute criterion let that baseline noise block a safety fix.",
+      "result_under_amended_rule": "POOL_HANDOFF_GUARD ON; POOL_RANK_BY_DISTANCE OFF (exact tie on every criterion).",
+      "wp1_closure": "still pending: the crossing-swap fix (its own lever, pre-registered before measuring) and the blind-band hand-off test for same-lane passing."
+    }
+  ],
+  "levers": {
+    "POOL_HANDOFF_GUARD": {
+      "work_package": "WP1",
+      "what": "PoolTracker pure handoff (no other camera currently sees that global id) never links a new track into a camera that itself saw that person within HANDOFF_GUARD_S of their last sighting: that camera's own (v2) resurfacing logic owns the person. Overlap matches are unchanged.",
+      "why": "Development observation (seed 0-4 probe, before this rule): with live cross-camera identity, a swimmer re-acquired 0.4 m from where another person had just gone under inherited the submerged person's global id in 2/5 seeds, so no vanished-swimmer watch opened and the SUBMERSION was MISSED; per-camera (v2) operation raised it 5/5. A safety regression: it must be fixed in WP1.",
+      "arms": [
+        "off (v2 PoolTracker)",
+        "on"
+      ],
+      "decides": "safety first",
+      "on_if": [
+        "S6 swim-over drill: the submerged person's SUBMERSION is raised within 10 s of the vanish in 5/5 battery seeds, AND",
+        "AMENDED 2026-10-09 (see amendments[0]): false SUBMERSION in the full-coverage scenarios S1, S3, S4, S5 (all seeds) ON <= OFF - the guard adds no net-new false alarm compared with OFF"
+      ],
+      "original_on_if_2": "0 false SUBMERSION in the full-coverage scenarios S1, S3, S4, S5 (every seed)",
+      "otherwise": "STOP WP1 and report with numbers (the guard cannot be left OFF while S6 misses a submersion)."
+    },
+    "POOL_RANK_BY_DISTANCE": {
+      "work_package": "WP1",
+      "what": "PoolTracker ranks overlap and handoff candidates together by distance / gate. v2 ranks EVERY overlap match (within OVERLAP_GATE_M of a person another camera sees now) above every handoff match, however much closer the handoff is.",
+      "why": "Development observation (blind-band probe, before this rule): an instructor re-acquired 0.05 m from their own predicted position took the global id of a child standing 0.82 m away (seen 0.43 s earlier by another camera): an id swap between two different people.",
+      "arms": [
+        "off (v2 ranking)",
+        "on"
+      ],
+      "decided_with": "POOL_HANDOFF_GUARD at its decided value",
+      "on_if": [
+        "over S1-S5 (all seeds): handoffs kept / handoffs ON >= OFF, AND",
+        "shared-global-id frames (two different people under one id at the same time) ON <= OFF, AND",
+        "same-camera duplicate ids = 0, AND",
+        "missed and false SUBMERSION (as defined below) not more than OFF"
+      ],
+      "tie": "A tie on every criterion is NOT a win: the lever stays OFF."
+    },
+    "POOL_ID_REPAIR": {
+      "work_package": "WP1",
+      "registered": "2026-10-09, before any implementation run or measurement",
+      "what": "After each camera's PoolTracker update (live/identity.py LivePoolTracker): a local track whose global id A is seen by another camera, at the same time, more than REPAIR_SPLIT_M (2.0 m) away, while exactly ONE other global id B is seen by another camera within OVERLAP_GATE_M of this track (and B is not on another track of this camera), is re-linked A -> B after REPAIR_MIN_UPDATES (5) consecutive such updates - only if this camera's link to A is YOUNGER than the conflicting cameras' links to A (the older consensus wins; no oscillation). It never links to an id nobody sees now.",
+      "why": "Battery result (evidence/wp1_identity_ab.json, all arms): two lane-2 swimmers passing within 0.1 m (S4 seed 103) leave one person under two ids (cam1/cam2 vs cam3/cam4); when that person leaves cam3/cam4 the id 'vanishes' -> false SUBMERSION; S4 also has 440-743 shared-id frames per seed from the same swaps.",
+      "arms": [
+        "off",
+        "on"
+      ],
+      "decided_with": "POOL_HANDOFF_GUARD ON, POOL_RANK_BY_DISTANCE OFF (decided, amendment a4a90f8)",
+      "seeds": [
+        201,
+        202,
+        203,
+        204,
+        205
+      ],
+      "seeds_note": "Fresh: never run before this registration.",
+      "scenarios": "S1-S6 as in battery, plus S7",
+      "S7": "blind band (13 m range) same-lane passing: two lane-3 swimmers swimming towards each other (0.9 m/s each) meet in the middle of the 3.8 m band nobody sees, and both are handed off on the far side; + an overtake in lane 2 (0.6 / 1.2 m/s) + swimmers in lanes 1 and 4; 75 s",
+      "on_if": [
+        "over S1-S7 (all seeds): shared-global-id frames ON < OFF (strictly fewer), AND",
+        "handoffs kept / handoffs ON >= OFF, AND",
+        "false SUBMERSION ON <= OFF and missed SUBMERSION ON <= OFF (S6 still 5/5), AND",
+        "same-camera duplicate ids = 0"
+      ],
+      "tie": "Not a win: OFF.",
+      "wp1_closure": "WP1 closes only if, with the decided configuration, S7 (all its seeds) keeps 100 % of the scripted handoffs and raises 0 false SUBMERSION. Otherwise STOP and report with numbers."
+    },
+    "RESPONSIBILITY_GATING": {
+      "work_package": "WP2",
+      "registered": "2026-10-09, before any measurement (there is no measurement of it on this laptop: the simulation rig produces no behaviour alerts)",
+      "what": "A behaviour alert from a calibrated camera NOT responsible for the person's pool spot (live/responsibility.py: in view, >= RESP_MIN_PX_PER_M (25) px per metre there and >= 1/RESP_DENSITY_RATIO (1.25) of the best camera's density) is recorded and linked but does not sound ('deferred to <camera>') while a responsible, MONITORED camera sees the same global id. Never: SUBMERSION, FAULT, ghosts, people without a global id, or when no responsible camera sees the person (fail-safe).",
+      "default": "OFF (thresholds 2.3.0) until decided",
+      "arms": [
+        "off",
+        "on"
+      ],
+      "measured_by": "WP6 site session on the client server: offline replay of the synchronised 4-camera drill recordings D1-D7 plus the normal-session recording, each arm on the same recordings",
+      "on_if": [
+        "false alarms per camera-hour (normal session) ON < OFF (strictly fewer), AND",
+        "every drill alert that sounds in OFF has a sounding alert for the same person (global id) in ON - 0 drill alarms lost, D5 submersions 10/10 in both, AND",
+        "time to the first sounding alert per drill ON - OFF <= 0.5 s"
+      ],
+      "tie": "Not a win: OFF.",
+      "until_measured": "OFF. The laptop gates of WP2 (projection round trip, identical membership, responsible coverage) do not decide it."
+    },
+    "MULTIVIEW_CONFIRM": {
+      "work_package": "WP3",
+      "registered": "2026-10-09, before implementation or any measurement",
+      "what": "A detection with score >= MULTIVIEW_MIN_SCORE whose pool position (box bottom-centre through the camera's calibration) lies within OVERLAP_GATE_M of a person ANOTHER calibrated camera of the pool sees right now (pool tracker), and where this camera has no confirmed track yet, is born and confirmed at once (ByteTrack confirm_now) instead of waiting for the next frame / the birth threshold. Never on uncalibrated cameras; never creates a second track where this camera already tracks someone.",
+      "arms": [
+        "off",
+        "on"
+      ],
+      "default": "OFF until decided",
+      "decided_by_wp3_spec": "the pre-registered A/B on the held-out split (eval/heldout_v1, TEST split, criteria order of eval/heldout_v1/split.json). The held-out split has NO multi-camera clip (10 single-camera stock clips): the switch cannot act there, so this A/B is necessarily an exact tie and a tie is not a win -> OFF. Run anyway as a no-regression check: ON must be bit-identical on every clip.",
+      "re_decided_at_site": "WP6 site replay of the synchronised 4-camera drill recordings (D1-D4, D6), each arm on the same recordings, pool level: ON iff time_to_first_detection_s median AND p95 ON <= OFF with at least one strictly lower, AND track_breaks_per_person_minute ON <= OFF, AND false alarms per camera-hour (normal session) ON <= OFF, AND no false SUBMERSION added, AND same-camera duplicate ids = 0. Otherwise OFF."
+    },
+    "DET_TILING_REGION": {
+      "work_package": "WP3",
+      "registered": "2026-10-09, before any measurement",
+      "what": "When DET_TILING is on, tiles cover only the camera's RESPONSIBLE region (live/responsibility.py, projected into the view) instead of the whole frame / water ROI; tiles are counted at the real frame size (2560x1440 at this site) for admission.",
+      "values": [
+        "frame",
+        "responsible"
+      ],
+      "default": "'responsible' - it has no effect while DET_TILING stays 'off' (Phase 8 decision, eval/heldout_v1/levers_phase8.json)",
+      "decided_with": "DET_TILING itself, at the WP6 site session (capacity at 15 fps with tiling off and on + in-water recall): DET_TILING is switched on only if the site capacity admits all 4 cameras at 15 fps with it AND in-water recall rises; this lever is not measured on its own."
+    },
+    "GLARE_HOLD": {
+      "work_package": "WP3",
+      "registered": "2026-10-09, after a disclosed design probe (below) and BEFORE implementation runs or the A/B",
+      "design_probe": "docs/phase_reports/phase11/WP3.md: through the real PersonTracker + scene, the CURRENT code keeps the id through straight glare passes up to 3.5 s with no false SUBMERSION, and a true vanish in glare raises SUBMERSION 5.2 s after the loss; it switches id on a fast 4.5 s pass (+ a false SUBMERSION) and on a fast turn inside the glare.",
+      "what": "A glare mask per camera (auto: persistently saturated low-saturation pixels, EMA over frames; plus operator GLARE zones drawn on the camera) split into regions. A track lost INSIDE a glare region is HELD for at most GLARE_HOLD_MAX_S: a new track born from that same region within the hold takes the held track's id - only if exactly ONE track is held in that region and no other track entered it since. The submersion watch is untouched: it opens and counts from the real loss time exactly as without the hold (a link only resolves it as any resurfacing does).",
+      "arms": [
+        "off",
+        "on"
+      ],
+      "default": "OFF until decided",
+      "battery": {
+        "rig": "synthetic box streams (2560x1440, 15 fps) through the real PersonTracker + SceneBehaviorTracker (whole frame = water), glare region a rectangle in the auto mask; box jitter 2 px, 5 % missed detections",
+        "seeds": [
+          301,
+          302,
+          303,
+          304,
+          305
+        ],
+        "seeds_note": "Fresh: never run before this registration (the probe used seed 0, no misses).",
+        "scenarios": {
+          "G1": "straight passes, glare 1.5 / 2.5 / 3.5 / 4.5 s x speed 60 / 150 / 300 px/s",
+          "G2": "turn inside the glare (comes out the side it entered), glare 1.5 / 3.0 s x speed 60 / 300 px/s",
+          "G3": "stops 2 s inside the glare, then swims out (glare 1.5 s of travel)",
+          "G4": "true vanish inside the glare (never comes out)",
+          "G5": "SAFETY: person A vanishes inside the glare; 1.5 s later person B (never seen before, entering the glare from the far side) comes out of it",
+          "G6": "two people enter the glare 1 s apart and both come out"
+        },
+        "metrics": {
+          "id_kept": "the person keeps one public id from before to after the glare (G1-G3, G6 per person)",
+          "false_submersion": "a SUBMERSION for a person who came out of the glare",
+          "missed_submersion": "G4 / G5: no SUBMERSION for the vanished person within 10 s of the loss",
+          "submersion_delay": "G4: SUBMERSION time ON - OFF (s)"
+        }
+      },
+      "on_if": [
+        "missed_submersion ON = 0 over G4 + G5, all seeds (G5 is the case the hold could make worse), AND",
+        "G4 submersion_delay ON - OFF <= 0 s on every seed (the hold never delays the alarm), AND",
+        "false_submersion ON <= OFF, AND",
+        "id_kept ON > OFF over G1-G3 + G6 (strictly more people keep their id)"
+      ],
+      "tie": "Not a win: OFF.",
+      "held_out_check": "If ON by the battery: the held-out TEST split (eval/heldout_v1) must not lose event recall or gain false alerts with it ON, else OFF (the auto mask is active on real footage).",
+      "re_checked_at_site": "WP6 D7 glare-pass drill replay with the decided value: report track breaks during glare and SUBMERSION outcomes; if it misses a D5/D7 submersion the lever is switched OFF."
+    }
+  },
+  "battery": {
+    "rig": "tests/integration/_pool_sim.py: 4 calibrated corner cameras (pinhole, 5 m, ~90 deg, aimed 8 m along the centre line from their own end), 15 fps, runtime-wide clock, cameras not frame-synchronised; real per-camera live path (calibration -> calibrated WATER zone -> PoolIdentity.bind -> scene ingest / score / expire -> identity.stamp)",
+    "seeds": [
+      101,
+      102,
+      103,
+      104,
+      105
+    ],
+    "seeds_note": "Not used by any run before this registration (development probes used seeds 0-11).",
+    "scenarios": {
+      "S1": "full coverage (17 m range): swimmers lanes 1-4 (one lap clip shifted in pool space) + instructor & child 0.7 m apart (lane 5) + one true vanish mid-pool at 30 s; 75 s; px noise 1.5, miss 4 %",
+      "S2": "blind band (13 m range; nobody sees a 3.8 m band across the centre): swimmers lanes 1-4 + instructor & child; 75 s",
+      "S3": "S1 with px noise 3.0 and 10 % missed detections",
+      "S4": "crowd: 12 swimmers (3 per lane 1-4, starts 9 s apart) + instructor & child (14 people); 75 s",
+      "S5": "overtake: two swimmers in lane 2 (0.6 / 1.2 m/s) + swimmers lanes 3-4; 75 s",
+      "S6": "swim-over drill: a person goes under for good at (6.0, 3.75) at 20 s; a swimmer occluded from 18.5 s to 21.5 s resurfaces 0.4 m past that spot; + swimmer lane 4; 40 s"
+    },
+    "metrics": {
+      "handoffs": "every new local track of a person who already had a global id; kept = its first global id is the id the person last carried",
+      "shared_gid_frames": "frames in which two different people carry the same global id (any cameras)",
+      "duplicates": "(camera, frame)s with one global id on two tracks of that camera",
+      "missed_submersion": "a scripted vanish with no SUBMERSION fire from a watch on that person's track within 10 s",
+      "false_submersion": "a SUBMERSION fire from a watch on a person whose longest all-camera unseen gap is < 3.0 s (TRACK_STALE_SECONDS) - people occluded for longer are not counted (no camera can tell)"
+    }
+  },
+  "metrics_wp3": {
+    "registered": "2026-10-09, with MULTIVIEW_CONFIRM, before any measurement",
+    "time_to_first_detection_s": "per ground-truth person: (first annotated frame where a CONFIRMED predicted track (track_id >= 0) matches the person's box) - (first annotated frame where the person is visible (vis != invisible) and in a monitored state (in_water / edge)), in seconds; a person never matched counts as 'missed' (reported separately, not as a time). Summaries: median, p95, n, missed. Resolution is the annotation spacing (reported).",
+    "track_breaks_per_person_minute": "(id switches + fragmentations of the matched confirmed track over the person's monitored annotated frames, as ClipDetectionTracking.tracking counts them) / (sum over persons of (last - first monitored annotated frame) / fps / 60)",
+    "per_camera_and_pool": "Single-camera: per clip. Multi-camera site recordings: per camera, and pool-level where the person is matched in ANY camera (a pool-level first detection is the earliest over the cameras)."
+  },
+  "gates_wp5": {
+    "work_package": "WP5 fast restart",
+    "registered": "2026-10-10, after the disclosed planning measurements below and BEFORE any WP5 code; plan + deviations 1-3 approved by the product owner 2026-10-10",
+    "baseline": "dev laptop (RTX 4060 Laptop GPU, driver 610.74, ORT 1.19.2, real RTMDet-m dynbatch on CUDA), warm OS file cache, 2 admitted 2560x1440 H.265 1 s-GOP cameras over MediaMTX, API killed and restarted (tests/_stack harness): process start -> health ready 5.80 / 5.84 s; -> all cameras MONITORED 8.97 / 9.03 s (+ 2 s NSSM AppRestartDelay). Capacity sweep (batch 1..8) 3.1 s of it. Cold OS cache (first profile of the day): imports 8.6 s + provider guard 13.3 s. Guard and runtime already share ONE ORT session (deviation from the plan item 'one model load instead of two': a regression test, no code).",
+    "cache": {
+      "file": "<DataDir>/capacity_cache.json, written atomically (temp + replace)",
+      "cached": "the GPU batch-latency table only (batch_ms 1..batch_max); the per-frame CPU overhead is re-measured at every start",
+      "key": ["cache schema version", "app version", "detector sha256", "model input size", "requested + active provider", "CUDA EP options", "scheduler mode (iobinding, dynamic batch)", "GPU name + uuid + driver version (nvidia-smi; CPU: processor name + core count)", "onnxruntime version", "batch_max", "detector calls per frame (tiling)", "capacity_frame_size"],
+      "unknown_gpu_identity": "cache not used for that start (measure)",
+      "max_age_h": 168,
+      "corrupt_or_unreadable": "ignored with a warning, full measure, file rewritten; never blocks startup"
+    },
+    "spot_check": {
+      "what": "on a key hit: median of 5 batch-1 runs after the guard's warm-up, compared with the cached batch-1 latency",
+      "accept_if": "spot <= cached * 1.10 AND spot >= cached * 0.70",
+      "else": "full batch 1..batch_max sweep before any admission, cache rewritten",
+      "why_asymmetric": "admission keeps HEADROOM = 0.9 (10 %): a GPU more than 10 % slower than the cache would over-admit; a faster GPU only wastes capacity (re-measured beyond 30 %). Deviation 1 (approved): replaces the plan's +-30 %. Measured batch-1 run-to-run spread 15.0-16.8 ms (about +-6 %)."
+    },
+    "warm_up": "cache hit: batch sizes 2..min(N enabled cameras, batch_max) get one warm-up run each before admission (the guard already warmed batch 1). Cache miss: the full 1..batch_max sweep is kept (deviation 2, approved): latency per frame RISES with batch size on the dev GPU (15.0 -> 17.6 ms/frame, batch 1 -> 8), so extrapolating unmeasured sizes would over-admit.",
+    "gates": {
+      "G1": "process start -> every enabled camera admitted <= 10 s (warm restart, cache hit; dev laptop GPU run, the test's own timeline)",
+      "G2": "capacity phase on a cache hit (spot check + warm-up 2..N) <= 0.6 s",
+      "G3": "warm crash recovery: process start -> all cameras MONITORED, reported against the 8.97-9.03 s baseline (same rig, 2 cameras); not a pass/fail number (deviation 3, approved: ~60 s is not reproducible on a warm restart)",
+      "G4": "a cache hit admits exactly the cameras a full measurement admits (same limit)",
+      "G5": "a spot check outside the tolerance, a key mismatch, a stale or a corrupt cache each force the full measurement"
+    },
+    "fps_fallback": "camera_fps_fallback (default 15): an implausible stream fps (outside 1..240, e.g. 90000) uses it instead of 25; fps_source 'fallback' in the capture status + a WARNING (approved option (b) of WP4 finding 4.2)"
+  },
+  "gates_wp6": {
+    "work_package": "WP6 site session kit",
+    "registered": "2026-10-10, BEFORE any WP6 code and before any site recording; plan + decisions 1-5 approved by the product owner 2026-10-10",
+    "decisions": {
+      "1_minors": "No minors in ANY recording (drills and normal session). D6 is run with adults only (an instructor + adult learners with floats / noodles). The kit refuses to record until the operator attests 'no person under 18 in the water or in view' for that recording; the attestation is logged.",
+      "2_normal_session": "A separate gated step `record --normal --hours N` (adults-only session, >= 1 h per camera; 4 camera-hours minimum for a rate). Same legal gate as the drills. If the client declines it, every rule needing it stays PENDING and the lever stays at its shipped default.",
+      "3_replay": "Lockstep 'replay' source through the real LiveRuntime (recorded session clock, no frame drops, no camera more than one frame period ahead of the slowest analysed camera) + detection record/replay keyed by (camera, frame, call) with an input digest: the first arm runs the GPU, later arms reuse its exact detector output; a digest mismatch aborts the arm.",
+      "4_tiling_capacity": "Capacity with DET_TILING on is COMPUTED from the batch-latency table the running API measured (CapacityProfile with calls_per_frame = 1 + tiles at 2560x1440), never by restarting or stopping monitoring.",
+      "5_report": "Two stages: PROVISIONAL (on the day: rows computable from the drill log, the live run and the replay traces) and FINAL (after the 1 fps box labels and the alert review). A row whose inputs are missing is PENDING, never PASS."
+    },
+    "legal_gate": {
+      "before_any_recording": "DPIA reference, data-sharing agreement reference, counsel approval reference, retention period, signage up (yes), performer consent forms on file for every performer id (yes), adults-only attestation (yes). Empty / 'no' -> recording refused. References are recorded in session.json, never the documents.",
+      "normal_session_extra": "public-notice reference (the announced recording window)",
+      "storage": "DataDir\\site_session\\<id>\\ with SYSTEM + Administrators only (inheritance removed); RIGHTS.csv rows (DATA_PROTOCOL 8) with rights_status 'pending' until the agreement is countersigned"
+    },
+    "drills": {
+      "SYNC": "a light flash (or clap) visible to every camera; mark = the flash. Used to measure inter-camera offset (> 2 frames -> measured offsets applied in the replay, reported)",
+      "D1": "6-15 adults spread over all lanes, 3 min (marks: start, end)",
+      "D2": "ONE adult swims 25 m lengths through every camera handoff, 4 lengths, alone in the water (lifeguard on deck) (marks: start, end)",
+      "D3": "entries one at a time by adults: step in, ladder, jump (a mark at each entry)",
+      "D4": "zone crossings: lane changes and on/off the submerged teaching platform, 1-2 adults (marks: start, end)",
+      "D5": "controlled submersion: a trained adult sits on the bottom 10-15 s with a rescuer in the water; 10 runs spread over the far end of every camera and the overlap areas (marks: under, surfaced)",
+      "D5b": "WP3 safety finding: as D5, and a second adult swims past in the ADJACENT lane within ~2 m, 2-5 s after the performer goes under - never over the performer (marks: under, pass, surfaced); >= 5 runs",
+      "D6": "standing adult instructor + adult learners with floats / noodles in shallow water, 5 min (false-alarm check; ADULTS ONLY)",
+      "D7": "glare-zone passes (afternoon light): an adult swims through the glare region repeatedly, 3 min; optional D7s = one controlled submersion inside the glare (lifeguard's decision) (marks: start, end / under, surfaced)"
+    },
+    "criteria": {
+      "status": "PROPOSED pass levels (Phase 11 plan table); the client confirms or changes them as an amendment of this file BEFORE the session - never after any result is seen",
+      "C1a_in_water_recall": {"pass": ">= 0.95", "drills": ["D1", "D6"], "stage": "FINAL (box labels on 1 fps sampled frames, IoU >= 0.3)"},
+      "C1b_analysed_fraction": {"pass": ">= 0.99 on every camera at 15 fps, MONITORED throughout, 0 dropped", "source": "5-min live run with all enabled cameras", "stage": "PROVISIONAL"},
+      "C2a_handoff_retention": {"pass": ">= 0.95", "drills": ["D2", "D4"], "definition": "lone-swimmer drill (D2; D4 when one adult): a handoff = an in-water observation of the swimmer by a camera that did not see them in the previous 1.0 s; kept = its global id equals the swimmer's id just before", "stage": "PROVISIONAL (D2); FINAL adds multi-person drills from labels"},
+      "C2b_id_switch_in_alert": {"pass": "0", "stage": "FINAL (box labels)"},
+      "C2c_incidents_per_person": {"pass": "1 incident per D5 / D5b run (the performer's global id)", "stage": "PROVISIONAL"},
+      "C3a_time_to_first_detection": {"pass": "median <= 1.0 s AND p95 <= 2.0 s", "drills": ["D3"], "definition_provisional": "entry mark -> first confirmed in-water track (new global id) within 10 s; resolution of the mark ~0.5 s", "stage": "PROVISIONAL (event level); FINAL = the WP3 metric time_to_first_detection_s on labels"},
+      "C3b_track_breaks": {"pass": "<= 0.5 per person-minute AND 0 false SUBMERSION in D2/D4/D7", "definition_provisional": "lone-swimmer drills: (distinct global ids - 1) per in-water minute", "stage": "PROVISIONAL (lone swimmer + false SUBMERSION); FINAL = WP3 metric on labels"},
+      "C3c_submersion": {"pass": "SUBMERSION for the performer <= 10.0 s after the 'under' mark in 10/10 D5 runs", "stage": "PROVISIONAL"},
+      "C3c_D5b_watch_clearing": {"pass": "reported: SUBMERSION for the PERFORMER (not the passer) <= 10.0 s after 'under' in every D5b run; any miss confirms the WP3 safety finding on site and becomes a pre-registered lever proposal (no automatic change)", "stage": "PROVISIONAL"},
+      "C4_false_alerts": {"pass": "<= 1.0 per camera-hour (Phase 10 policy)", "inputs": "every alert in D6 is false by construction; normal-session alerts need the reviewer's verdict (review sheet)", "stage": "FINAL (PENDING without the normal session or its review)"}
+    },
+    "levers": {
+      "target_analysis_fps": "stays 15 iff the 5-min live run has every camera MONITORED throughout, analysed fraction >= 0.99 and 0 dropped at 15 fps; otherwise C1b FAILS and the report lists the options (fewer cameras per GPU, a stronger GPU, cameras at a lower fps with re-validation). Never lowered automatically.",
+      "DET_TILING": "PROVISIONAL: computed capacity with tiling (decision 4) must admit every enabled camera at 15 fps; FINAL: in-water recall ON > OFF on the labelled D1+D6 frames (detector-only, same frames). Both, else off. DET_TILING_REGION follows it.",
+      "RESPONSIBILITY_GATING": "the WP2 rule as registered (63f90c3), on the replay arms OFF vs GATING; needs the reviewed normal session -> FINAL; PENDING without it",
+      "MULTIVIEW_CONFIRM": "the WP3 site rule as registered (e595224), on the replay arms OFF vs MULTIVIEW; needs labels -> FINAL",
+      "GLARE_HOLD": "decided OFF in WP3; D7 replay with OFF: track breaks during glare and SUBMERSION outcomes reported",
+      "tie": "a tie is not a win: the shipped default stays"
+    },
+    "replay_arms": {
+      "pinning": "each arm is a COMPLETE thresholds values set written by the kit (every Phase 11 switch explicit), so a later default change cannot alter an arm",
+      "OFF": {"POOL_HANDOFF_GUARD": true, "POOL_ID_REPAIR": true, "POOL_RANK_BY_DISTANCE": false, "RESPONSIBILITY_GATING": false, "MULTIVIEW_CONFIRM": false, "GLARE_HOLD": false, "DET_TILING": "off", "DET_ZOOM": false},
+      "GATING": "OFF + RESPONSIBILITY_GATING true",
+      "MULTIVIEW": "OFF + MULTIVIEW_CONFIRM true",
+      "detector": "the OFF arm records every detector call; GATING and MULTIVIEW replay them (identical input digest required)"
+    },
+    "session_checks": {
+      "camera_check": "per camera vs docs/CAMERA_SETUP.md: codec hevc, 2560x1440, measured fps 15 +- 0.5, keyframe gaps all 1.0 s +- 1 frame over >= 2 GOPs in a 20 s window (irregular -> 'H.265+ / dynamic GOP' FAIL), no B-frames, frame-rate timing present (else WARN), hardware decode (else WARN), first frame <= 3 s",
+      "coverage": "every 0.5 m pool cell has >= 1 responsible camera; all cameras calibrated to ONE pool; overlap band reported",
+      "capacity": "tiling off from the running API's measured table; tiling on computed (decision 4)",
+      "sync": "inter-camera offset from the SYNC flash <= 2 frames, else measured offsets applied"
+    }
+  },
+  "gates_wp7": {
+    "registered": "2026-10-10, BEFORE any pre-open code (git history shows the order). Design written first; gates fixed here.",
+    "work_package": "WP7 follow-up 3: open the cameras in parallel with the provider guard and the capacity phase",
+    "approved_by_product_owner": "2026-10-10 (WP5 follow-ups 1-3 approved; 'do all the changes' for the WP7 plan incl. its recommendations: identical-admission meaning, A/A arm)",
+    "baseline": "WP5 gates_wp5: 2 admitted 2560x1440 H.265 1 s-GOP cameras over MediaMTX, API hard-killed + restarted, capacity cache hit: all MONITORED 6.22-6.75 s after process creation (tests/integration/test_fast_restart_gpu.py). OpenCV serialises RTSP opens process-wide, ~1.8 s each.",
+    "design": {
+      "idea": "a closed-gate CaptureWorker is opened right after database_ready, in parallel with threshold audit, provider guard and capacity phase. Frames are read and DISCARDED (keeps the TCP session drained); nothing is queued, no CameraWorker / detector / recorder / identity binding exists. After admission (profile.admit, unchanged) the runtime ADOPTS the matching pre-opened capture: attaches the stream clock and the queue, builds the CameraWorker + detector, then opens the gate.",
+      "what_is_pre_opened": "enabled RTSP cameras in admission order (name order); never file / replay sources (eval harness unchanged); only when live runtime is enabled and camera_preopen is on",
+      "adoption_key": "(camera id, decrypted source, source type); any mismatch (source edited, camera disabled) stops the pre-opened worker and opens a fresh one as today",
+      "release": "PreOpener.close() stops every un-adopted worker: capacity-refused, invalid source, disabled, startup refused. Called at the end of LiveService.start(), in start_live's failure path and in the lifespan finally; idempotent; stop signalled to all first, then one shared join budget; a blocked OpenCV open releases its capture when the open returns (CaptureWorker.run finally); preopen_max_hold_s=60 stops anything never adopted",
+      "switch": "camera_preopen (AQUAGUARD_CAMERA_PREOPEN); default decided by the rule below",
+      "admission_meaning": "required_fps() counts the observed fps of admitted cameras that already have a frame. Today camera 1 usually has no frame yet when camera 2 is admitted (a race); with pre-open it always has one. 'Identical admission' therefore means: identical for every camera whose fps <= target_analysis_fps (the site: 15 = 15). For a camera faster than target the pre-open admission is deterministically the stricter, documented rule; a unit test pins it. Alternative (hiding pre-admission fps) rejected: it would keep a race on purpose.",
+      "api": "additive only: capture status 'preopened' flag, timeline events preopen_started / preopened per camera. No migration."
+    },
+    "gates": {
+      "P1_speed": "WP5 rig, 5 restarts per arm, arms alternated ON/OFF in the same run (laptop GPU heat hits both). PASS iff median(ON all-MONITORED after process creation) <= median(OFF) - 1.0 s AND every ON sample <= 10 s (WP5 G1 still holds). Also reported against the WP5 baseline 6.22-6.75 s. A restart whose spot check re-measures is kept and counted in its arm, flagged.",
+      "P2_identical_admission": "every P1 restart: ON and OFF give the same admitted camera set, the same not_started reasons and the same capacity limit; CPU integration test with limit+1 cameras: the same camera refused with the same CAPACITY_EXCEEDED FAULT in both arms",
+      "P3_nothing_before_admission": "for every camera: zero frames queued and zero analysed before its 'admitted' event; a capacity-refused camera never appears in status.cameras and has 0 analysed frames (counting fake opener unit test + real RTSP integration test)",
+      "P4_no_leak_on_refusal": "provider guard forced to fail in-process (real MediaMTX stream): within 3 s of the lifespan raising, while the test process lives: MediaMTX reports 0 readers on the paths, no capture-* thread alive, fake-opener releases == opens. Same for a capacity-refused camera and a camera disabled between pre-open and admission",
+      "P5_blocked_open": "a blocking fake opener + close(): close() returns within its budget and the capture is released once the open returns"
+    },
+    "default_rule": "camera_preopen is ON iff P1-P5 all pass; otherwise OFF and the code stays dormant. A failed gate is reported with its numbers, not tuned.",
+    "carried_forward_runs": {
+      "heldout_multiview": "rule e595224 unchanged (expects an exact tie -> OFF). Arms on eval/heldout_v1 TEST split, GPU, every other switch pinned: OFF, ON, and OFF again (A/A). Compared with aquaguard.eval.trace --box-tol 0 --conf-tol 0 plus equal event results. ON != OFF is a finding only if A/A is identical (otherwise CUDA run-to-run non-determinism is reported instead).",
+      "test_live_gpu": "re-checked inside the single ci.ps1 -Gpu run with the AquaGuard services stopped; a failure is reported with the WP5/WP6 A/B evidence, no fix without approval",
+      "site_session_smoke": "tools/site_session.ps1 -Smoke against build/stage, if the staged stack can be started; otherwise the reason is stated"
+    },
+    "amendment_gates_wp5": "AppRestartDelay is 0.5 s from WP7 (was 2 s when the WP5 baseline was measured); the WP5 numbers keep their 2 s; new restarts are measured with 0.5 s."
+  }
+}
