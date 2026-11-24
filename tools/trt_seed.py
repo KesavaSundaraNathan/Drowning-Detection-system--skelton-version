@@ -7,8 +7,8 @@ Engines are built once per GPU / driver / TensorRT version by `tools/build_trt_e
 <data-dir>/trt_cache. A test stack copies the engines whose file names start with each model's
 `session.engine_prefix` (model stem + sha256) plus the timing cache, so it starts in seconds on TensorRT instead of
 compiling for minutes - and a CUDA fallback is never measured. The source is LIFEGUARD_TRT_SEED_DIR, else
-<clone>\\runtime\\trt_cache (this clone's own data dir). A model without a matching engine is an error: the box has not run
-build_trt_engines.py since the model or the GPU stack changed.
+<clone>\\runtime\\trt_cache (this clone's own data dir). A model without a matching engine is an error: the box has
+not run build_trt_engines.py since the model or the GPU stack changed.
 """
 
 from __future__ import annotations

@@ -155,7 +155,8 @@ class Settings(BaseSettings):
     # services start in any order: API_DOWN is not raised in the supervisor's first
     # seconds (camera, scheduler, disk and backup checks are never delayed)
     supervisor_startup_grace_s: float = Field(45.0, ge=0, le=600)
-    supervisor_api_url: str = "http://127.0.0.1:8100"  # [rtmpose clone] its own API port (the original uses 8000)  # where the supervisor polls /api/v1/health/ready
+    # where the supervisor polls /api/v1/health/ready; [rtmpose clone] its own API port (the original uses 8000)
+    supervisor_api_url: str = "http://127.0.0.1:8100"
     supervisor_renotify_s: float = Field(900.0, ge=1, le=86_400)  # repeat an unresolved SYSTEM FAULT
     disk_min_free_gb: float = Field(5.0, ge=0)
     backup_max_age_h: float = Field(26.0, gt=0, le=24 * 30)  # nightly backup + slack
