@@ -76,6 +76,12 @@ as 30 fps and analyses only 2 of every 3 frames.
   were no keypoints to draw. The clone now runs pose there too, for the overlay only: a CCTV camera is still never
   scored, and the non-person (fixture) and id-link rules get no keypoints, as before. `LIFEGUARD_CCTV_SKELETON=0`
   restores the original (no pose, no GPU cost on CCTV cameras); `tests/unit/test_cctv_skeleton.py`.
+- **LAGGING with 4 cameras and someone watching:** pose on every CCTV frame, plus the viewer's own work, put 3 of 4
+  cameras ~2 s behind live (60 s runs, RTX 5060, 4 cameras, one operator on the Cameras page: lag mean 1.5-1.9 s,
+  0.75 GPU busy; with CCTV pose off: 0 s, 0.40). CCTV pose now runs on every `LIFEGUARD_CCTV_POSE_EVERY`-th frame
+  (default 3, cameras staggered); the viewer keeps each person's last skeleton for up to 1 s. Same load after the
+  fix: all 4 cameras at 17.5 fps, max lag 0.16 s, 0 dropped, 0.48 GPU busy; skeleton on 73-94% of confirmed people
+  in any frame.
 
 For bit-identical detections to the original, seed this clone's engine cache with the original's engines (copy
 `C:\LifeGuardDev\trt_cache` to `runtime\trt_cache`): separately built TensorRT FP16 engines differ in the last digits.

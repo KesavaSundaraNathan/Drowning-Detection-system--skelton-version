@@ -27,6 +27,7 @@ when POSE_ENABLED and a pose model is configured: top-down RTMPose-m COCO on eve
 
 from __future__ import annotations
 
+import itertools
 import logging
 import os
 import threading
@@ -100,6 +101,12 @@ logger = logging.getLogger(__name__)
 # reads these keypoints: stage_pose's output reaches only the displayed people (see _detect_rtm). Set
 # LIFEGUARD_CCTV_SKELETON=0 to get the original behaviour (no pose on standard CCTV, no GPU cost there).
 CCTV_SKELETON: bool = os.environ.get("LIFEGUARD_CCTV_SKELETON", "1").strip().lower() not in ("0", "false", "no", "off")
+# ... and only on every CCTV_POSE_EVERY-th analysed frame (default 3 = 5 Hz at 15 fps), cameras staggered: the
+# skeleton is display-only, the viewer holds a person's last pose (<= 1 s) and moves it with the box. Measured on the
+# RTX 5060, 4 cameras and a viewer on the Cameras page: pose on every frame -> 3 of 4 cameras ~2 s behind live;
+# pose off -> none.
+CCTV_POSE_EVERY: int = max(1, int(os.environ.get("LIFEGUARD_CCTV_POSE_EVERY", "3") or 3))
+_CCTV_PHASE = itertools.count()  # each detector (camera) starts on the next phase, so their pose rounds interleave
 
 BBox = tuple[int, int, int, int]
 Point = tuple[float, float]
@@ -399,6 +406,7 @@ class MultiPersonDetector:
         self.faint_births = bool(TRACK_FAINT_BIRTHS)
         # [v4] standard CCTV camera (vision/scene/scene_type.py): people are detected and tracked, never posed
         self.surveillance = False
+        self._cctv_pose_tick = next(_CCTV_PHASE)
         self.water_test: Any | None = None
         self.follower: Any | None = None  # [2.40.0] SUBMERGED_FOLLOW (vision/tracking/submerged.py), built on first use
         self.outside_water_test: Any | None = None  # [2.33.0] set_outside_water_test
@@ -1071,6 +1079,10 @@ class MultiPersonDetector:
         """(pose_idx, keypoints, keypoint scores, skipped mask) for the tracked boxes; top-down RTMPose crops."""
         if self._pose_model is None or len(boxes) == 0 or (self.surveillance and not CCTV_SKELETON):
             return np.empty((0,), int), np.zeros((0, 17, 2)), np.zeros((0, 17)), np.zeros(len(boxes), bool)
+        if self.surveillance:  # [rtmpose clone] overlay only: pose on every CCTV_POSE_EVERY-th frame
+            self._cctv_pose_tick += 1
+            if self._cctv_pose_tick % CCTV_POSE_EVERY:
+                return np.empty((0,), int), np.zeros((0, 17, 2)), np.zeros((0, 17)), np.ones(len(boxes), bool)
         idx, skipped = self.pose_plan(boxes, ids)
         if len(idx) == 0:
             return idx, np.zeros((0, 17, 2)), np.zeros((0, 17)), skipped
